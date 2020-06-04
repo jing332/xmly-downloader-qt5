@@ -62,22 +62,22 @@
           </spacer>
          </item>
          <item alignment="Qt::AlignHCenter">
-          <widget class="QPushButton" name="retryAllBtn">
+          <widget class="QPushButton" name="selectAllBtn">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="text">
-            <string>重试全部</string>
+            <string>全选</string>
            </property>
           </widget>
          </item>
          <item alignment="Qt::AlignHCenter">
-          <widget class="QPushButton" name="retrySelectedBtn">
+          <widget class="QPushButton" name="retryBtn">
            <property name="enabled">
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>重试选中</string>
+            <string>重试</string>
            </property>
           </widget>
          </item>

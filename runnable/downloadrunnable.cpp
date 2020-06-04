@@ -2,6 +2,7 @@
 
 #include <QDateTime>
 #include <QDebug>
+#include <QRandomGenerator>
 #include <QThread>
 
 #include "cgo.h"
@@ -16,22 +17,8 @@ DownloadRunnable::DownloadRunnable(int id, const QString &url,
 void DownloadRunnable::run() {
   emit start(id_);
 
-  auto dataError =
-      Cgo::getInstance()->cgo_getFileLength(url_.toStdString().c_str());
-  QString err(dataError->error);
-  if (err.isEmpty()) {
-    long *p = (long *)dataError->data;
-    long length = *(p);
-    emit fileLength(id_, length);
-    dataError->data = nullptr;
-  } else {
-    emit finished(id_, err);
-    return;
-  }
-  delete dataError;
-
   auto *cstr = Cgo::getInstance()->cgo_downloadFile(
-      url_.toStdString().c_str(), filePath_.toStdString().c_str());
+      url_.toStdString().c_str(), filePath_.toStdString().c_str(), id_);
 
   if (cstr) {
     QString error(cstr);

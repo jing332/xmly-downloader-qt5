@@ -9,18 +9,15 @@ Cgo *Cgo::Cgo::getInstance() {
   return &cgo;
 }
 
-int Cgo::setCgo(void *_a, void *_b) {
-  if (QStringLiteral("cgo_getAudiobookInfo").compare((char *)_a) == 0)
-    cgo_getAudiobookInfo = (CGO_GET_AUDIOBOOK_INFO)_b;
-
-  if (QStringLiteral("cgo_getAudioInfo").compare((char *)_a) == 0)
-    cgo_getAudioInfo = (CGO_GET_AUDIO_INFO)_b;
-
-  if (QStringLiteral("cgo_downloadFile").compare((char *)_a) == 0)
-    cgo_downloadFile = (CGO_DOWNLOAD_FILE)_b;
-
-  if (QStringLiteral("cgo_getFileLength").compare((char *)_a) == 0)
-    cgo_getFileLength = (CGO_GET_FILE_LENGTH)_b;
+int Cgo::setCgo(const QString &funcName, void *funcPtr) {
+  if (funcName == QStringLiteral("cgo_getAudiobookInfo"))
+    cgo_getAudiobookInfo = (CGO_GET_AUDIOBOOK_INFO)funcPtr;
+  else if (funcName == QStringLiteral("cgo_getAudioInfo"))
+    cgo_getAudioInfo = (CGO_GET_AUDIO_INFO)funcPtr;
+  else if (funcName == QStringLiteral("cgo_downloadFile"))
+    cgo_downloadFile = (CGO_DOWNLOAD_FILE)funcPtr;
+  else if (funcName == QStringLiteral("cgo_getFileLength"))
+    cgo_getFileLength = (CGO_GET_FILE_LENGTH)funcPtr;
 
   return 1;
 }

@@ -14,12 +14,11 @@ TEMPLATE = lib
 
 TARGET = xmly-downloader-qt5
 DESTDIR = $$PWD/cgoqt
-DLLDESTDIR = $$PWD/cgoqt
 
 CONFIG(debug,  debug|release){
-QMAKE_POST_LINK += "export GO111MODULE=on ; cd $$PWD/cgoqt ; go build -v -o xmly-downloader-qt5.exe"
+QMAKE_POST_LINK = "cd $$PWD/cgoqt && go build -v -o xmly-downloader-qt5.exe"
 } else {
-QMAKE_POST_LINK += "export GO111MODULE=on ; cd $$PWD/cgoqt ; go build -ldflags '-H windowsgui' -v -o xmly-downloader-qt5.exe"
+QMAKE_POST_LINK = "cd $$PWD/cgoqt ; go build -ldflags '-H windowsgui' -v -o xmly-downloader-qt5.exe"
 }
 
 # You can also make your code fail to compile if it uses deprecated APIs.
@@ -38,6 +37,7 @@ SOURCES += \
     ui/mainwindow.cpp
 
 HEADERS += \
+  appevent.h \
     cgo.h \ \
   runnable/downloadrunnable.h \
   runnable/getaudiobookinforunnable.h \

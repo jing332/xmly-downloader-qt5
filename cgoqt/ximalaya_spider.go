@@ -54,7 +54,8 @@ import (
   	extern void init();
    	extern int start();
    	extern void drv_cgo_callback(void*, void*);
-	extern void addAudioItem(void*);
+	//extern void addAudioItem(void*);
+    extern void updateFileLength(int id, long *length);
 
    	static void callback() // GO中调用
    	{
@@ -67,7 +68,7 @@ import (
 		extern void* cgoGetAudiobookInfo(int audiobookId);
 		//extern void* cgoGetAudioList(int audiobookId, int audioCount);
 		extern DataError* cgoGetAudioInfo(int audiobookId, int page, int pageSize);
-		extern char* cgoDownloadFile(char* url, char* filePath);
+		extern char* cgoDownloadFile(char* url, char* filePath, int id);
 		extern DataError* cgoGetFileLength(char* url);
 
 		//drv_cgo_callback(_cgo_getAudioList, &cgoGetAudioList);
@@ -117,12 +118,6 @@ import (
 		*pp = p;
 	}
 
-	static inline void printArray(void *array, int index)
-	{
-		void** p = (void**)array;
-		printf("printArray: %x %d\n",  p[index], sizeof(array));
-	}
-
   	static inline void* newPointerArray(int length)
 	{
 		void** cArray = (void**)malloc(length * sizeof(void*));
@@ -133,7 +128,6 @@ import (
 	{
 		void** p = (void**)array;
 		p[index] = v;
-		//printf("arrayPointer: %d %d, arrayIndex: %d\n", array, p, v);
 	}
 
 	static inline CArray* newCArray(void* p, int length)
@@ -152,11 +146,6 @@ import (
 
 		return dataError;
 	}
-
-	//static inline long* newCLong(long l)
-	//{
-	//	long* p = (long*)
-	//}
 
 	//static inline void setCArray(void **pp, void *pointer, int length)
 	//{
@@ -219,7 +208,7 @@ func cgoGetAudioInfo(audiobookId, page, pageSize C.int) *C.DataError {
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
-	
+
 	ptrArray := C.newPointerArray(C.int(len(list)))
 	for i, v := range list {
 		C.setPointerArray(ptrArray, C.int(i), C.newAudioItem(C.int(v.Id), C.CString(v.Title), C.CString(v.Url)))
@@ -231,11 +220,26 @@ func cgoGetAudioInfo(audiobookId, page, pageSize C.int) *C.DataError {
 }
 
 //export cgoDownloadFile
-func cgoDownloadFile(cUrl, cFilePath *C.char) *C.char {
+func cgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 	var url string = C.GoString(cUrl)
 	var filePath string = C.GoString(cFilePath)
 
-	resp, err := http.Get(url)
+	resp, err := http.Head(url)
+	if err != nil {
+		return C.CString(err.Error())
+	}
+	defer resp.Body.Close()
+
+	cLang := C.long(resp.ContentLength)
+	C.updateFileLength(id, &cLang)
+
+	if fileInfo, err := os.Stat(filePath); err == nil {
+		if fileInfo.Size() == resp.ContentLength {
+			return nil
+		}
+	}
+
+	resp, err = httpGet(url)
 	if err != nil {
 		return C.CString(fmt.Sprintf("download %s fail: %s", url, err.Error()))
 	}
@@ -265,16 +269,17 @@ func cgoDownloadFile(cUrl, cFilePath *C.char) *C.char {
 	return nil
 }
 
+var client = http.Client{}
+
 //export cgoGetFileLength
 func cgoGetFileLength(cUrl *C.char) *C.DataError {
 	var url string = C.GoString(cUrl)
 
-	request,err := http.NewRequest("HEAD", url, nil)
+	request, err := http.NewRequest("HEAD", url, nil)
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
 
-	client := &http.Client{}
 	resp, err := client.Do(request)
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
@@ -354,128 +359,15 @@ func GetAudioBookInfo(audiobookId int) (title string, audioCount, pageCount int,
 	return
 }
 
-//
+func httpGet(url string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 
-//func Start(audiobookId, begin, end, maxRoutineCount int, downloadDir string) error {
-//	//获取有声小说信息
-//	title, audioCount, _, err := GetAudioBookInfo(audiobookId)
-//	if err != nil {
-//		return err
-//	}
-//	downloadDir += "/" + title
-//
-//	ch := make(chan int, maxRoutineCount)
-//	var wg sync.WaitGroup
-//
-//	//获取所有音频
-//	list := GetAudioInfoList(audiobookId, audioCount)
-//	for i, v := range list {
-//		i++
-//		if i >= begin && (i <= end || end == -1) {
-//			ch <- 1
-//			wg.Add(1)
-//
-//			go func(url, dir, fileName string, index int, ch chan int) {
-//				log.Println("download:", index, fileName, url)
-//
-//				//去除非法字符
-//				reg, _ := regexp.Compile("[\\\\/:*?\"<>|]")
-//				fileName = reg.ReplaceAllString(fileName, "")
-//
-//				err = download(url, fmt.Sprintf("%s/%s.m4a", dir, fileName), true, ch)
-//				if err != nil {
-//					log.Fatal(err)
-//				}
-//				wg.Add(-1)
-//			}(v.Url, downloadDir, v.Title, i, ch)
-//		}
-//	}
-//
-//	wg.Wait()
-//	return nil
-//}
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4139.0 Safari/537.36 Edg/84.0.516.1")
 
-//func GetAudioInfoList(audiobookId, audioCount int) (audioList []AudioItem) {
-//	if audioCount > 100 {
-//		//分number次Get
-//		number := audioCount / 100
-//		for i := 0; i < number; i++ {
-//			list, err := GetAudioInfo(audiobookId, i+1, 100)
-//			if err != nil {
-//				log.Fatal(err)
-//			}
-//			audioList = append(audioList, list...)
-//		}
-//
-//		j := audioCount % 100
-//		if j > 0 { //有余数
-//			list, err := GetAudioInfo(audiobookId, number+1, j)
-//			if err != nil {
-//				log.Fatal(err)
-//			}
-//			audioList = append(audioList, list...)
-//		}
-//	} else { //音频数量 <= 100
-//		list, err := GetAudioInfo(audiobookId, 1, audioCount)
-//		if err != nil {
-//			log.Fatal(err)
-//		}
-//		audioList = append(audioList, list...)
-//	}
-//
-//	return audioList
-//}
-
-//func download(url, filePath string, forceSave bool, ch chan int) error {
-//	if !forceSave {
-//		if _, err := os.Stat(filePath); err == nil {
-//			log.Println("file path exists:", filePath)
-//			return nil
-//		}
-//	}
-//
-//	resp, err := http.Get(url)
-//	if err != nil {
-//		log.Printf("download %s fail: %s", url, err.Error())
-//		return download(url, filePath, forceSave, ch)
-//	}
-//	defer resp.Body.Close()
-//	if resp.StatusCode != 200 {
-//		log.Fatal("download" + url + "fail: StatusCode != 200")
-//	}
-//
-//	//目录不存在则创建
-//	err = os.MkdirAll(filepath.Dir(filePath), 0777)
-//	if err != nil && !os.IsExist(err) {
-//		return fmt.Errorf("make dir fail: %s", err.Error())
-//	}
-//
-//	//创建并写入文件
-//	file, err := os.Create(filePath)
-//	if err != nil {
-//		return fmt.Errorf("create file %s fail: %s", filePath, err.Error())
-//	}
-//	defer file.Close()
-//
-//	_, err = io.Copy(file, resp.Body)
-//	if err != nil {
-//		return fmt.Errorf("io copy %s fail: %s", filePath, err.Error())
-//	}
-//
-//	<-ch
-//	return nil
-//}
-
-//var (
-//	mainPageId  = 19383749 //https://www.ximalaya.com/youshengshu/19383749/
-//	downloadDir = "download"
-//)
-//func main() {
-//	log.SetFlags(log.Ltime | log.Lshortfile)
-//
-//	//mainPageId:有声小说主页Id, begin: 起始音频, end: 结束音频, maxRoutineCount: 最大协程(建议1-5 太大可能导致磁盘写入跟不上), downloadDir: 下载目录
-//	err := Start(mainPageId, 1, -1, 5, downloadDir)
-//	if err != nil {
-//  log.Fatal(err)
-//	}
-//}
+	return client.Do(req)
+}

@@ -10,12 +10,12 @@ class DownloadTaskItemWidget : public QWidget {
   explicit DownloadTaskItemWidget(const QString &fileName, const QString &url,
                                   QWidget *parent = nullptr);
 
-  void setStatus(const QString &status);
+  void SetStatus(const QString &status);
 
  private:
-  QLabel *statusLabel;
-  QLabel *fileNameLabel;
-  QLabel *urlLabel;
+  QLabel *statusLabel_;
+  QLabel *fileNameLabel_;
+  QLabel *urlLabel_;
 };
 
 #endif  // DOWNLOADITEMWIDGET_H

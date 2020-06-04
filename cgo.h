@@ -42,7 +42,8 @@ typedef struct AudioBookInfo* (*CGO_GET_AUDIOBOOK_INFO)(int audiobookId);
 typedef struct DataError* (*CGO_GET_AUDIO_INFO)(int audiobookId, int page,
                                                 int pageSize);
 
-typedef const char* (*CGO_DOWNLOAD_FILE)(const char* url, const char* filePath);
+typedef const char* (*CGO_DOWNLOAD_FILE)(const char* url, const char* filePath,
+                                         int id);
 typedef struct DataError* (*CGO_GET_FILE_LENGTH)(const char* url);
 
 class Cgo {
@@ -51,7 +52,7 @@ class Cgo {
 
  public:
   static Cgo* getInstance();
-  int setCgo(void* _a, void* _b);
+  int setCgo(const QString& funcName, void* _b);
 
  public:
   CGO_GET_AUDIOBOOK_INFO cgo_getAudiobookInfo = nullptr;

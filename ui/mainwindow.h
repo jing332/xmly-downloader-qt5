@@ -23,6 +23,7 @@ class MainWindow : public QMainWindow {
 
  private slots:
   void on_selectDirBtn_clicked();
+  void on_downloadDirLabel_linkActivated(const QString &link);
   void on_parseBtn_clicked();
   void on_selectAllBtn_clicked();
   void on_unselectBtn_clicked();
@@ -32,23 +33,24 @@ class MainWindow : public QMainWindow {
   void on_mp3RadioBtn_clicked();
   void on_m4aRadioBtn_clicked();
 
-  void getAudiobookInfoFinished(AudioBookInfo *info, int audiobookId);
-  void getAudioInfoFinished(const QList<AudioItem *> &audioItemList);
-  void getAudioInfoError(const QString reason, int audiobookId, int page,
+  void GetAudiobookInfoFinished(AudioBookInfo *info, int audiobookId);
+  void GetAudioInfoFinished(const QList<AudioItem *> &audioItemList);
+  void GetAudioInfoError(const QString reason, int audiobookId, int page,
                          int pageSize);
-  void timeout();
+  void Timeout();
 
  signals:
-  void addAudioItemSignal(AudioItem *item);
+  void AddAudioItem(AudioItem *item);
 
  private:
-  Ui::MainWindow *ui;
+  Ui::MainWindow *ui_;
 
-  QList<AudioItem *> audioItems;
-  QMenu *tableWidgetMenu;
-  QTimer *timer;
-  QThreadPool *pool;
-  QString downloadDir;
-  QString suffixName = QStringLiteral(".m4a");
+  QList<AudioItem *> audioItems_;
+  QMenu *tableWidgetMenu_;
+  QTimer *timer_;
+  QThreadPool *pool_;
+  QString downloadDir_;
+  QString suffixName_ = QStringLiteral(".m4a");
+  QRegularExpression specialCharReg = QRegularExpression("[\\:*?\"<>|]");
 };
 #endif  // MAINWINDOW_H

@@ -2,6 +2,7 @@
 #include <QDateTime>
 #include <QDebug>
 
+#include "appevent.h"
 #include "cgo.h"
 #include "ui/downloadqueuedialog.h"
 #include "ui/mainwindow.h"
@@ -49,30 +50,29 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context,
   outputStream.flush();
 }
 
-MainWindow *mainWin;
-extern "C" void addAudioItem(void *p) {
-  auto audioItem = reinterpret_cast<AudioItem *>(p);
-  if (!QString(audioItem->url).isEmpty())
-    emit mainWin->addAudioItemSignal(audioItem);
-}
+MainWindow *win;
 
 extern "C" void init() { qInstallMessageHandler(myMessageOutput); }
 
 // 开始运行 (在Go内调用)
 extern "C" int start() {
-  qInfo() << "Start Qt-GUI." << QThread::currentThreadId();
+  qInfo() << "Start Qt-GUI";
   int argc = 0;
   char **argv = 0;
 
   QApplication app(argc, argv);
   app.setFont(QFont("Microsoft YaHei", 12));
 
-  mainWin = new MainWindow();
-  mainWin->show();
+  win = new MainWindow();
+  win->show();
 
   return app.exec();
 }
 
-extern "C" void drv_cgo_callback(void *_a, void *_b) {
-  Cgo::getInstance()->setCgo(_a, _b);
+extern "C" void drv_cgo_callback(char *funcName, void *funcPtr) {
+  Cgo::getInstance()->setCgo(funcName, funcPtr);
+}
+
+extern "C" void updateFileLength(int id, long *length) {
+  emit AppEvent::getInstance()->SetFileLength(id, *length);
 }
