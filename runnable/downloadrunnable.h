@@ -12,9 +12,8 @@ class DownloadRunnable : public QObject, public QRunnable {
   void run() override;
 
  signals:
-  void start(int id);
-  void finished(int id, const QString &error);
-  void fileLength(int id, long length);  //文件长度 单位：byte
+  void Start(int id);
+  void Finished(int id, const QString &error);
 
  private:
   int id_ = -1;

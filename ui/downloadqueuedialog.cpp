@@ -23,8 +23,8 @@ DownloadQueueDialog::DownloadQueueDialog(QWidget *parent)
   ui_->downloadFailedListWidget->setSelectionMode(
       QAbstractItemView::ExtendedSelection);
 
-  connect(AppEvent::getInstance(), &AppEvent::SetFileLength, this,
-          &DownloadQueueDialog::OnSetFileLength);
+  connect(AppEvent::getInstance(), &AppEvent::UpdateFileLength, this,
+          &DownloadQueueDialog::OnUpdateFileLength);
 }
 
 DownloadQueueDialog::~DownloadQueueDialog() { delete ui_; }
@@ -37,12 +37,11 @@ void DownloadQueueDialog::DownloadFile(int id, const QString &url,
                                        const QString &fileName) {
   auto downloadRunnable = new DownloadRunnable(
       id, url, downloadDir_ + "/" + fileName + suffixName_);
-  connect(downloadRunnable, &DownloadRunnable::fileLength, this,
-          &DownloadQueueDialog::OnSetFileLength);
-  connect(downloadRunnable, &DownloadRunnable::finished, this,
-          &DownloadQueueDialog::DownloadFinished);
-  connect(downloadRunnable, &DownloadRunnable::start, this,
+  connect(downloadRunnable, &DownloadRunnable::Start, this,
           &DownloadQueueDialog::DownloadStart);
+  connect(downloadRunnable, &DownloadRunnable::Finished, this,
+          &DownloadQueueDialog::DownloadFinished);
+
   pool_->start(downloadRunnable);
 }
 
@@ -71,11 +70,12 @@ void DownloadQueueDialog::AddItemWidget(int id, const QString &url,
                                         const QString &fileName) {
   auto itemWidget = new DownloadTaskItemWidget(fileName, url);
   auto item = new QListWidgetItem(ui_->downloadingListWidget);
+  item->setSizeHint(QSize(0, 50));
   item->setData(Qt::UserRole, QVariant::fromValue(itemWidget));
-  item->setSizeHint(QSize(item->sizeHint().width(), 40));
   ui_->downloadingListWidget->addItem(item);
   ui_->downloadingListWidget->setItemWidget(item, itemWidget);
   downloadingListWidgetItems_.insert(id, item);
+  qDebug() << item->sizeHint();
 }
 
 bool DownloadQueueDialog::HasTask() {
@@ -94,8 +94,8 @@ void DownloadQueueDialog::closeEvent(QCloseEvent *event) {
 }
 
 void DownloadQueueDialog::DownloadFinished(int id, const QString &error) {
-  //移除条目
-  auto &listItem = downloadingListWidgetItems_[id];
+  /*从 downloadingListWidget 中移除Item*/
+  auto listItem = downloadingListWidgetItems_.value(id);
   ui_->downloadingListWidget->takeItem(
       ui_->downloadingListWidget->row(listItem));
   downloadingListWidgetItems_.remove(id);
@@ -107,7 +107,7 @@ void DownloadQueueDialog::DownloadFinished(int id, const QString &error) {
                       .arg(id)
                       .arg(error);
 
-    //通过id找到AudioItem并添加到 下载失败列表
+    /*通过id找到AudioItem并添加到 下载失败列表*/
     for (int i = 0; i < audioItems_.size(); i++) {
       auto &item = audioItems_.at(i);
       if (item->id == id) {
@@ -125,15 +125,18 @@ void DownloadQueueDialog::DownloadFinished(int id, const QString &error) {
     }
   }
 
-  //更新进度条
+  /*更新进度条*/
   int completed =
       audioItems_.size() - ui_->downloadingListWidget->model()->rowCount();
   int value = completed * scale;
   ui_->progressBar->setValue(value);
-  if (value == 100) {  //所有文件下载完成
+  if (value == 100) { /*所有文件下载完成*/
     audioItems_.clear();
-    //无下载失败 自动关闭对话框
-    if (ui_->downloadFailedListWidget->model()->rowCount() == 0) this->accept();
+    if (ui_->downloadFailedListWidget->model()->rowCount() == 0) {
+      this->accept(); /*无下载失败 自动关闭对话框*/
+    } else {
+      ui_->tabWidget->setCurrentIndex(1);
+    }
   }
 }
 
@@ -141,16 +144,23 @@ void DownloadQueueDialog::DownloadStart(int id) {
   auto &listItem = downloadingListWidgetItems_[id];
   auto variant = listItem->data(Qt::UserRole);
   auto itemWidget = variant.value<DownloadTaskItemWidget *>();
-  itemWidget->SetStatus("正在获取文件\n大小...");
+  itemWidget->SetStatus("获取文件\n大小...");
+  itemWidget->SetProgressBarVisible(true);
 }
 
-void DownloadQueueDialog::OnSetFileLength(int id, long length) {
+void DownloadQueueDialog::OnUpdateFileLength(int id, long contentLength,
+                                             long currentLength) {
   auto &listItem = downloadingListWidgetItems_[id];
   auto variant = listItem->data(Qt::UserRole);
   auto itemWidget = variant.value<DownloadTaskItemWidget *>();
+
+  itemWidget->UpdateProgressBar(
+      int((double(100) / contentLength) * currentLength));
   itemWidget->SetStatus(
-      QStringLiteral("正在下载...\n(%1MB)")  // 1024*1024 = 1048576
-          .arg(QString::number(double(length) / double(1048576), 'f', 2)));
+      QStringLiteral("(%1MB/%2MB)") /*1024k * 1024k = 1048576k = 1MB*/
+          .arg(QString::number(double(currentLength) / double(1048576), 'f', 2))
+          .arg(QString::number(double(contentLength) / double(1048576), 'f',
+                               2)));
 }
 
 void DownloadQueueDialog::on_downloadFailedListWidget_itemSelectionChanged() {
@@ -162,7 +172,7 @@ void DownloadQueueDialog::on_downloadFailedListWidget_itemSelectionChanged() {
 }
 
 void DownloadQueueDialog::on_retryBtn_clicked() {
-  //重新下载选中条目
+  /*重新下载选中条目*/
   if (!ui_->downloadFailedListWidget->selectedItems().isEmpty()) {
     ui_->progressBar->setValue(0);
 

@@ -46,7 +46,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context,
   }
 
   QTextStream outputStream(device);
-  outputStream << strMessage << endl;
+  outputStream << strMessage << Qt::endl;
   outputStream.flush();
 }
 
@@ -73,6 +73,8 @@ extern "C" void drv_cgo_callback(char *funcName, void *funcPtr) {
   Cgo::getInstance()->setCgo(funcName, funcPtr);
 }
 
-extern "C" void updateFileLength(int id, long *length) {
-  emit AppEvent::getInstance()->SetFileLength(id, *length);
+extern "C" void updateFileLength(int id, long *contentLength,
+                                 long *currentLength) {
+  emit AppEvent::getInstance()->UpdateFileLength(id, *contentLength,
+                                                 *currentLength);
 }

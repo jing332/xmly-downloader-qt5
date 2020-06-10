@@ -6,18 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>750</width>
+    <width>800</width>
     <height>550</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
+    <width>670</width>
     <height>350</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>下载管理</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -34,13 +43,23 @@
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QListWidget" name="downloadingListWidget"/>
+        <widget class="QListWidget" name="downloadingListWidget">
+         <property name="styleSheet">
+          <string notr="true">QWidget:focus {
+	outline: none;
+}
+
+QListWidget::Item {
+	border-bottom:1px solid gray;
+}</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
-       <string>下载失败</string>
+       <string>下载失败(0)</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>

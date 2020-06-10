@@ -2,6 +2,7 @@
 #define DOWNLOADITEMWIDGET_H
 
 #include <QLabel>
+#include <QProgressBar>
 #include <QWidget>
 
 class DownloadTaskItemWidget : public QWidget {
@@ -11,11 +12,14 @@ class DownloadTaskItemWidget : public QWidget {
                                   QWidget *parent = nullptr);
 
   void SetStatus(const QString &status);
+  void UpdateProgressBar(int value);
+  void SetProgressBarVisible(bool visible);
 
  private:
   QLabel *statusLabel_;
   QLabel *fileNameLabel_;
   QLabel *urlLabel_;
+  QProgressBar *progressBar;
 };
 
 #endif  // DOWNLOADITEMWIDGET_H

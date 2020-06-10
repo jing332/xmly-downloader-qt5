@@ -18,7 +18,6 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui_(new Ui::MainWindow) {
   ui_->setupUi(this);
-
   qRegisterMetaType<QList<AudioItem *>>("QList<AudioItem*>");
   qRegisterMetaType<QVector<int>>("QVector<int>");
 
@@ -159,7 +158,7 @@ void MainWindow::on_startDownloadBtn_clicked() {
                                     ui_->maxTaskCountSpinBox->value(),
                                     downloadDir_, suffixName_);
   if (downloadQueueDialog.exec() == QDialog::Accepted) {
-    ui_->statusbar->showMessage("所选文件下载完成!", 5000);
+    ui_->statusbar->showMessage("所选文件下载完成!");
   };
 }
 
@@ -190,7 +189,9 @@ void MainWindow::GetAudiobookInfoFinished(AudioBookInfo *info,
   QString error(info->error);
   if (error.isEmpty()) {
     auto text =
-        QStringLiteral("小说名称: <a href=%3>%1</a>\t音频数量: <b>%2</b>")
+        QStringLiteral(
+            "小说名称: <a href='%3'><span style='text-decoration: underline; "
+            "color:black;'>%1</span></a>\t音频数量: <b>%2</b>")
             .arg(info->title)
             .arg(info->audioCount)
             .arg(QStringLiteral("https://www.ximalaya.com/youshengshu/")
@@ -211,7 +212,7 @@ void MainWindow::GetAudiobookInfoFinished(AudioBookInfo *info,
   } else {
     qWarning() << "get audiobook info fail:" << error;
     ui_->statusbar->showMessage(
-        QStringLiteral("获取小说信息失败: ").append(error), 1000 * 10);
+        QStringLiteral("获取小说信息失败: ").append(error));
     ui_->parseBtn->setEnabled(true);
   }
 
@@ -246,7 +247,9 @@ void MainWindow::GetAudioInfoError(const QString reason, int audiobookId,
                  .arg(reason)
                  .arg(audiobookId, page, pageSize);
   qWarning() << err;
-  ui_->statusbar->showMessage(err, 1000 * 10);
+  ui_->statusbar->showMessage(
+      QStringLiteral("获取音频列表失败: %1").arg(reason));
+  ui_->parseBtn->setEnabled(true);
 }
 
 void MainWindow::on_titleLabel_linkActivated(const QString &link) {

@@ -15,8 +15,7 @@ DownloadRunnable::DownloadRunnable(int id, const QString &url,
 }
 
 void DownloadRunnable::run() {
-  emit start(id_);
-
+  emit Start(id_);
   auto *cstr = Cgo::getInstance()->cgo_downloadFile(
       url_.toStdString().c_str(), filePath_.toStdString().c_str(), id_);
 
@@ -24,8 +23,8 @@ void DownloadRunnable::run() {
     QString error(cstr);
     qWarning() << QStringLiteral("download fail: {url: %1, error: %2}")
                       .arg(url_, error);
-    emit finished(id_, error);
+    emit Finished(id_, error);
     delete cstr;
   } else
-    emit finished(id_, QStringLiteral(""));
+    emit Finished(id_, QStringLiteral(""));
 }

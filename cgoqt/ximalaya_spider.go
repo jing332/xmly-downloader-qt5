@@ -54,24 +54,20 @@ import (
   	extern void init();
    	extern int start();
    	extern void drv_cgo_callback(void*, void*);
-	//extern void addAudioItem(void*);
-    extern void updateFileLength(int id, long *length);
+    extern void updateFileLength(int id, long *contentLength, long *currentLength);
 
-   	static void callback() // GO中调用
+   	static inline void callback() // GO中调用
    	{
 		char* _cgo_getAudiobookInfo = "cgo_getAudiobookInfo";
-		//char* _cgo_getAudioList = "cgo_getAudioList";
 		char* _cgo_getAudioInfo = "cgo_getAudioInfo";
 		char* _cgo_downloadFile = "cgo_downloadFile";
 		char* _cgo_getFileLength = "cgo_getFileLength";
 
 		extern void* cgoGetAudiobookInfo(int audiobookId);
-		//extern void* cgoGetAudioList(int audiobookId, int audioCount);
 		extern DataError* cgoGetAudioInfo(int audiobookId, int page, int pageSize);
 		extern char* cgoDownloadFile(char* url, char* filePath, int id);
 		extern DataError* cgoGetFileLength(char* url);
 
-		//drv_cgo_callback(_cgo_getAudioList, &cgoGetAudioList);
 		drv_cgo_callback(_cgo_getAudiobookInfo, &cgoGetAudiobookInfo);
 		drv_cgo_callback(_cgo_getAudioInfo, &cgoGetAudioInfo);
 		drv_cgo_callback(_cgo_downloadFile, &cgoDownloadFile);
@@ -163,19 +159,11 @@ import "C"
 func main() {
 	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
 
-	//cArray := C.newPointerArray(2)
-	//C.setPointerArray(cArray, 0, C.newAudioItem(C.int(00), C.CString("Title0"), C.CString("URL0")))
-	//C.setPointerArray(cArray, 1, C.newAudioItem(C.int(11), C.CString("Title1"), C.CString("URL1")))
-	//C.printArray(cArray, 0)
-	//C.printArray(cArray, 1)
-
-	log.Println("start")
 	runtime.LockOSThread()
 	C.init()
 	C.callback()
 	C.start()
 	runtime.UnlockOSThread()
-	log.Println("exit")
 }
 
 //export cgoGetAudiobookInfo
@@ -183,7 +171,6 @@ func cgoGetAudiobookInfo(audiobookId C.int) unsafe.Pointer {
 	var pAudiobookInfo unsafe.Pointer
 	title, audioCount, pageCount, err := GetAudioBookInfo(int(audiobookId))
 	if err != nil {
-		log.Println(err)
 		C.setAudiobookInfoErr(&pAudiobookInfo, C.CString(err.Error()))
 		return pAudiobookInfo
 	}
@@ -191,16 +178,6 @@ func cgoGetAudiobookInfo(audiobookId C.int) unsafe.Pointer {
 
 	return pAudiobookInfo
 }
-
-////export cgoGetAudioList
-//func cgoGetAudioList(audiobookId, audioCount C.int) (cArray unsafe.Pointer) {
-//	//list := GetAudioInfoList(int(audiobookId), int(audioCount))
-//
-//	//pList := *(*[]byte)(unsafe.Pointer(&list))
-//	//C.setCArray(&cArray, C.CBytes(pList), C.int(len(list)))
-//
-//	return
-//}
 
 //export cgoGetAudioInfo
 func cgoGetAudioInfo(audiobookId, page, pageSize C.int) *C.DataError {
@@ -219,19 +196,33 @@ func cgoGetAudioInfo(audiobookId, page, pageSize C.int) *C.DataError {
 	return p
 }
 
+type DownloadProgress struct {
+	io.Reader
+	ContentLength, CurrentLength int64
+	Progress func()
+}
+
+func (d *DownloadProgress) Write(p []byte) (n int, err error) {
+	n = len(p)
+	d.CurrentLength += int64(n)
+	d.Progress()
+	return
+}
+
 //export cgoDownloadFile
 func cgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 	var url string = C.GoString(cUrl)
 	var filePath string = C.GoString(cFilePath)
 
-	resp, err := http.Head(url)
+	resp, err := client.Head(url)
 	if err != nil {
 		return C.CString(err.Error())
 	}
 	defer resp.Body.Close()
 
-	cLang := C.long(resp.ContentLength)
-	C.updateFileLength(id, &cLang)
+	contentLength := C.long(resp.ContentLength)
+	//currentLength := C.long(0)
+	C.updateFileLength(id, &contentLength, new(C.long))
 
 	if fileInfo, err := os.Stat(filePath); err == nil {
 		if fileInfo.Size() == resp.ContentLength {
@@ -261,7 +252,13 @@ func cgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 	}
 	defer file.Close()
 
-	_, err = io.Copy(file, resp.Body)
+	downloadProgress := &DownloadProgress{ContentLength: resp.ContentLength}
+	downloadProgress.Progress = func() {
+		contentLength = C.long(downloadProgress.ContentLength)
+		currentLength := C.long(downloadProgress.CurrentLength)
+		C.updateFileLength(id, &contentLength, &currentLength)
+	}
+	_, err = io.Copy(io.MultiWriter(file, downloadProgress), resp.Body)
 	if err != nil {
 		return C.CString(fmt.Sprintf("io copy %s fail: %s", filePath, err.Error()))
 	}
@@ -304,11 +301,12 @@ func GetAudioInfo(audiobookId, page, pageSize int) (audioList []AudioItem, err e
 		return nil, fmt.Errorf("http get %v fail:%v", format, err.Error())
 	}
 
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	resp.Body.Close()
+
 
 	list := jsoniter.Get(body, "data").Get("trackDetailInfos")
 	for i2 := 0; i2 < list.Size(); i2++ {

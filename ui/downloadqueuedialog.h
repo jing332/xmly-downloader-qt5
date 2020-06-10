@@ -34,7 +34,7 @@ class DownloadQueueDialog : public QDialog {
  private slots:
   void DownloadFinished(int id, const QString &error);
   void DownloadStart(int id);
-  void OnSetFileLength(int id, long length);
+  void OnUpdateFileLength(int id, long contentLength, long currentLength);
 
   void on_retryBtn_clicked();
   void on_selectAllBtn_clicked();

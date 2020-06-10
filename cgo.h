@@ -52,7 +52,7 @@ class Cgo {
 
  public:
   static Cgo* getInstance();
-  int setCgo(const QString& funcName, void* _b);
+  int setCgo(const QString& funcName, void* funcPtr);
 
  public:
   CGO_GET_AUDIOBOOK_INFO cgo_getAudiobookInfo = nullptr;
