@@ -23,11 +23,11 @@ class MainWindow : public QMainWindow {
 
  private slots:
   void on_selectDirBtn_clicked();
-  void on_downloadDirLabel_linkActivated(const QString &link);
   void on_parseBtn_clicked();
   void on_selectAllBtn_clicked();
   void on_unselectBtn_clicked();
   void on_startDownloadBtn_clicked();
+  void on_downloadDirLabel_linkActivated(const QString &link);
   void on_tableWidget_customContextMenuRequested(const QPoint &pos);
   void on_titleLabel_linkActivated(const QString &link);
   void on_mp3RadioBtn_clicked();

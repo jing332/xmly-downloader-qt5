@@ -54,3 +54,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 FORMS += \
   ui/downloadqueuedialog.ui \
   ui/mainwindow.ui
+
+RESOURCES += \
+  xmly-downloader-qt5.qrc

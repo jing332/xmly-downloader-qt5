@@ -4,3 +4,4 @@
 /cgoqt/*.dll
 /cgoqt/download
 /cgoqt/.idea
+/.qmake.stash

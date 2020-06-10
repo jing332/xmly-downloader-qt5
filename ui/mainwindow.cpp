@@ -26,10 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
   pool_->setMaxThreadCount(1);
 
   downloadDir_ = qApp->applicationDirPath().append(QStringLiteral("/download"));
-  ui_->downloadDirLabel->setText(
-      QStringLiteral("<a href='%1'><span style='text-decoration: underline; "
-                     "color:black;'>%1</span></a>")
-          .arg(downloadDir_));
+  ui_->downloadDirLineEdit->setText(downloadDir_);
 
   connect(timer_, &QTimer::timeout, this, &MainWindow::Timeout);
   connect(ui_->tableWidget->selectionModel(),
@@ -90,21 +87,7 @@ void MainWindow::on_selectDirBtn_clicked() {
   auto dir = QFileDialog::getExistingDirectory(this);
   if (!dir.isEmpty()) {
     downloadDir_ = dir;
-    ui_->downloadDirLabel->setText(
-        QStringLiteral("<a href='%1'><span style=' text-decoration: underline; "
-                       "color:black;'>%1</span></a>")
-            .arg(downloadDir_));
-  }
-}
-
-qint64 firstTime = 0;
-void MainWindow::on_downloadDirLabel_linkActivated(const QString &link) {
-  qint64 secondTime = QDateTime::currentMSecsSinceEpoch();
-  //双击
-  if (800 < secondTime - firstTime) {
-    firstTime = secondTime;
-  } else {
-    QDesktopServices::openUrl(link);
+    ui_->downloadDirLineEdit->setText(downloadDir_);
   }
 }
 
@@ -260,5 +243,16 @@ void MainWindow::on_titleLabel_linkActivated(const QString &link) {
   if (btn == QMessageBox::Yes) {
     qDebug() << "open url:" << link;
     QDesktopServices::openUrl(QUrl(link));
+  }
+}
+
+qint64 firstTime = 0;
+void MainWindow::on_downloadDirLabel_linkActivated(const QString &) {
+  qint64 secondTime = QDateTime::currentMSecsSinceEpoch();
+  //双击
+  if (800 < secondTime - firstTime) {
+    firstTime = secondTime;
+  } else {
+    QDesktopServices::openUrl(downloadDir_);
   }
 }

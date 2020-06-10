@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>喜马拉雅有声小说批量下载器(仅支持免费音频)  注: 此工具仅为学习交流使用， 严禁商业用途！</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../xmly-downloader-qt5.qrc">
+    <normaloff>:/ximalaya.ico</normaloff>:/ximalaya.ico</iconset>
+  </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
 	font: 12pt &quot;Microsoft YaHei&quot;;
@@ -29,9 +33,15 @@
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item alignment="Qt::AlignLeft">
        <widget class="QLabel" name="audioBookIdlabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
-          <width>80</width>
+          <width>85</width>
           <height>0</height>
          </size>
         </property>
@@ -42,7 +52,7 @@
          </size>
         </property>
         <property name="text">
-         <string>有声小说ID:</string>
+         <string>有声小说ID: </string>
         </property>
        </widget>
       </item>
@@ -79,22 +89,6 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Minimum</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
        <widget class="Line" name="line_4">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -112,46 +106,22 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="downloadDirLabel">
         <property name="text">
-         <string>下载目录(双击打开):</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;url&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;下载目录(双击打开):&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="downloadDirLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Microsoft YaHei</family>
-          <pointsize>12</pointsize>
-          <weight>50</weight>
-          <italic>false</italic>
-          <bold>false</bold>
-          <underline>false</underline>
-          <strikeout>false</strikeout>
-          <kerning>true</kerning>
-         </font>
-        </property>
-        <property name="cursor">
-         <cursorShape>ArrowCursor</cursorShape>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
+       <widget class="QLineEdit" name="downloadDirLineEdit">
         <property name="text">
-         <string>C:/downloadDir</string>
+         <string/>
         </property>
-        <property name="openExternalLinks">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="clearButtonEnabled">
          <bool>false</bool>
-        </property>
-        <property name="textInteractionFlags">
-         <set>Qt::LinksAccessibleByMouse</set>
         </property>
        </widget>
       </item>
@@ -401,6 +371,8 @@ font: 9pt &quot;微软雅黑&quot;;</string>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="../xmly-downloader-qt5.qrc"/>
+ </resources>
  <connections/>
 </ui>
