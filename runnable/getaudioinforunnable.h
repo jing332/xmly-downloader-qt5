@@ -13,8 +13,8 @@ class GetAudioInfoRunnable : public QObject, public QRunnable {
   void run() override;
 
  signals:
-  void finished(const QList<AudioItem *> &audioItemList);
-  void error(const QString reason, int audiobookId, int page, int pageSize);
+  void Finished(const QList<AudioItem *> &audioItemList);
+  void Error(const QString reason, int audiobookId, int page, int pageSize);
 
  private:
   int audioId_;

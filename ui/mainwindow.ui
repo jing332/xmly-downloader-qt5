@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../xmly-downloader-qt5.qrc">
-    <normaloff>:/ximalaya.ico</normaloff>:/ximalaya.ico</iconset>
+    <normaloff>:/res/ximalaya.ico</normaloff>:/res/ximalaya.ico</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
@@ -96,6 +96,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="cookieBtn">
+        <property name="text">
+         <string>未设置Cookie</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_5">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="selectDirBtn">
         <property name="enabled">
          <bool>true</bool>
@@ -132,10 +146,16 @@
       <item>
        <widget class="QLabel" name="titleLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
         </property>
         <property name="text">
          <string/>
@@ -268,7 +288,7 @@
          <number>1</number>
         </property>
         <property name="maximum">
-         <number>8</number>
+         <number>5</number>
         </property>
         <property name="value">
          <number>3</number>
@@ -327,7 +347,7 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_3">
+       <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -339,7 +359,7 @@
         </property>
        </spacer>
       </item>
-      <item>
+      <item alignment="Qt::AlignRight">
        <widget class="QLabel" name="label">
         <property name="minimumSize">
          <size>
@@ -358,7 +378,7 @@
 font: 9pt &quot;微软雅黑&quot;;</string>
         </property>
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;提示: Ctrl+鼠标左键&lt;/span&gt;&lt;span style=&quot; font-size:9pt; font-weight:600;&quot;&gt;多选&lt;/span&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Shift+鼠标左键&lt;/span&gt;&lt;span style=&quot; font-size:9pt; font-weight:600;&quot;&gt;或&lt;/span&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;长按鼠标左键滑动可&lt;/span&gt;&lt;span style=&quot; font-size:9pt; font-weight:600;&quot;&gt;范围多选&lt;/span&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;提示: Ctrl+鼠标左键&lt;span style=&quot; font-weight:600;&quot;&gt;多选&lt;/span&gt;. &lt;br/&gt;Shift+鼠标左键&lt;span style=&quot; font-weight:600;&quot;&gt;或&lt;/span&gt;长按鼠标左键滑动可&lt;span style=&quot; font-weight:600;&quot;&gt;范围多选&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>

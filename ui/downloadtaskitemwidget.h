@@ -14,6 +14,7 @@ class DownloadTaskItemWidget : public QWidget {
   void SetStatus(const QString &status);
   void UpdateProgressBar(int value);
   void SetProgressBarVisible(bool visible);
+  QString GetFileNameText();
 
  private:
   QLabel *statusLabel_;

@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>ximalaya.ico</file>
+        <file>res/ximalaya.ico</file>
+        <file>res/qt_zh_CN.qm</file>
     </qresource>
 </RCC>

@@ -30,8 +30,10 @@ SOURCES += \
     cgo.cpp \
     main.cpp \
     runnable/downloadrunnable.cpp \
-    runnable/getaudiobookinforunnable.cpp \
+    runnable/downloadvipfilerunnable.cpp \
+    runnable/getalbuminforunnable.cpp \
     runnable/getaudioinforunnable.cpp \
+    runnable/getvipaudioinforunnable.cpp \
     ui/downloadqueuedialog.cpp \
     ui/downloadtaskitemwidget.cpp \
     ui/mainwindow.cpp
@@ -40,8 +42,10 @@ HEADERS += \
   appevent.h \
     cgo.h \ \
   runnable/downloadrunnable.h \
-  runnable/getaudiobookinforunnable.h \
+  runnable/downloadvipfilerunnable.h \
+  runnable/getalbuminforunnable.h \
   runnable/getaudioinforunnable.h \
+  runnable/getvipaudioinforunnable.h \
   ui/downloadqueuedialog.h \
   ui/downloadtaskitemwidget.h \
   ui/mainwindow.h

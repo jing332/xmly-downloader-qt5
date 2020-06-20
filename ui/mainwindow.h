@@ -33,11 +33,13 @@ class MainWindow : public QMainWindow {
   void on_mp3RadioBtn_clicked();
   void on_m4aRadioBtn_clicked();
 
-  void GetAudiobookInfoFinished(AudioBookInfo *info, int audiobookId);
-  void GetAudioInfoFinished(const QList<AudioItem *> &audioItemList);
-  void GetAudioInfoError(const QString reason, int audiobookId, int page,
-                         int pageSize);
+  void OnGetAlbumInfoFinished(AlbumInfo *info, int audiobookId);
+  void OnGetAudioInfoFinished(const QList<AudioItem *> &audioItemList);
+  void OnGetAudioInfoError(const QString reason, int audiobookId, int page,
+                           int pageSize);
   void Timeout();
+
+  void on_cookieBtn_clicked();
 
  signals:
   void AddAudioItem(AudioItem *item);
@@ -49,6 +51,8 @@ class MainWindow : public QMainWindow {
   QMenu *tableWidgetMenu_;
   QTimer *timer_;
   QThreadPool *pool_;
+
+  QString cookie_;
   QString downloadDir_;
   QString suffixName_ = QStringLiteral(".m4a");
   QRegularExpression specialCharReg = QRegularExpression("[\\:*?\"<>|]");

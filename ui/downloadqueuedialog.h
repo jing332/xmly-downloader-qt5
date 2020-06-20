@@ -17,23 +17,34 @@ class DownloadQueueDialog : public QDialog {
   Q_OBJECT
 
  public:
-  explicit DownloadQueueDialog(QWidget *parent = nullptr);
+  explicit DownloadQueueDialog(const QString &cookie,
+                               QWidget *parent = nullptr);
+
   ~DownloadQueueDialog();
 
   void SetMaxThreadCount(int count);
   void DownloadFile(int id, const QString &url, const QString &fileName);
   void DownloadFile(AudioItem *audioItem);
+  void DownloadVipFile(AudioItem *ai);
+
   void StartDownload(QList<AudioItem *> &audioItems, int maxTaskCount,
                      const QString &downloadDir, const QString suffixName);
-  void AddItemWidget(int id, const QString &url, const QString &filePath);
+  void AddDownloadingItemWidget(int id, const QString &url,
+                                const QString &filePath);
+  void AddDownloadFailedItemWidget(int trackId, AudioItem *ai,
+                                   const QString &err);
   bool HasTask();
 
  protected:
   void closeEvent(QCloseEvent *) override;
 
+ private:
+  DownloadTaskItemWidget *GetDownloadTaskItemWidget(int trackID);
+  void SetDownloadFailedCount(int count);
+
  private slots:
-  void DownloadFinished(int id, const QString &error);
-  void DownloadStart(int id);
+  void OnDownloadFinished(int id, const QString &error);
+  void OnDownloadStart(int id);
   void OnUpdateFileLength(int id, long contentLength, long currentLength);
 
   void on_retryBtn_clicked();
@@ -47,9 +58,10 @@ class DownloadQueueDialog : public QDialog {
   QMap<int, QListWidgetItem *> downloadingListWidgetItems_;
   QList<AudioItem *> audioItems_;
 
-  int downloadFailedCount = 0;
+  int downloadFailedCount_ = 0;
   int taskCount_ = 0;
   int maxTaskCount_ = 1;
+  QString cookie_;
   QString downloadDir_;
   QString suffixName_;
 };

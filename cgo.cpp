@@ -10,10 +10,12 @@ Cgo *Cgo::Cgo::getInstance() {
 }
 
 int Cgo::setCgo(const QString &funcName, void *funcPtr) {
-  if (funcName == QStringLiteral("cgo_getAudiobookInfo"))
-    cgo_getAudiobookInfo = (CGO_GET_AUDIOBOOK_INFO)funcPtr;
+  if (funcName == QStringLiteral("cgo_getAlbumInfo"))
+    cgo_getAlbumInfo = (CGO_GET_ALBUM_INFO)funcPtr;
   else if (funcName == QStringLiteral("cgo_getAudioInfo"))
     cgo_getAudioInfo = (CGO_GET_AUDIO_INFO)funcPtr;
+  else if (funcName == QLatin1String("cgo_getVipAudioInfo"))
+    cgo_getVipAudioInfo = (CGO_GET_VIP_AUDIO_INFO)funcPtr;
   else if (funcName == QStringLiteral("cgo_downloadFile"))
     cgo_downloadFile = (CGO_DOWNLOAD_FILE)funcPtr;
   else if (funcName == QStringLiteral("cgo_getFileLength"))

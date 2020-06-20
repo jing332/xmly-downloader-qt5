@@ -7,12 +7,14 @@
 #include "appevent.h"
 #include "cgo.h"
 #include "runnable/downloadrunnable.h"
+#include "runnable/downloadvipfilerunnable.h"
 #include "ui/mainwindow.h"
 
-DownloadQueueDialog::DownloadQueueDialog(QWidget *parent)
-    : QDialog(parent), ui_(new Ui::DownloadQueueDialog) {
+DownloadQueueDialog::DownloadQueueDialog(const QString &cookie, QWidget *parent)
+    : QDialog(parent), ui_(new Ui::DownloadQueueDialog), cookie_(cookie) {
   ui_->setupUi(this);
 
+  setWindowFlag(Qt::WindowContextHelpButtonHint, false);
   pool_ = new QThreadPool(this);
   ui_->progressBar->setValue(0);
 
@@ -38,20 +40,70 @@ void DownloadQueueDialog::DownloadFile(int id, const QString &url,
   auto downloadRunnable = new DownloadRunnable(
       id, url, downloadDir_ + "/" + fileName + suffixName_);
   connect(downloadRunnable, &DownloadRunnable::Start, this,
-          &DownloadQueueDialog::DownloadStart);
+          &DownloadQueueDialog::OnDownloadStart);
   connect(downloadRunnable, &DownloadRunnable::Finished, this,
-          &DownloadQueueDialog::DownloadFinished);
+          &DownloadQueueDialog::OnDownloadFinished);
 
   pool_->start(downloadRunnable);
 }
 
-void DownloadQueueDialog::DownloadFile(AudioItem *audioItem) {
-  DownloadFile(audioItem->id, audioItem->url, audioItem->title);
-  audioItems_.append(audioItem);
+/*下载免费音频文件*/
+void DownloadQueueDialog::DownloadFile(AudioItem *ai) {
+  DownloadFile(ai->id, ai->url, ai->title);
+  audioItems_.append(ai);
+}
+
+/*下载Vip音频文件*/
+void DownloadQueueDialog::DownloadVipFile(AudioItem *ai) {
+  auto dlVipFileRun = new DownloadVipFileRunnable(
+      ai->id, cookie_, downloadDir_ + "/" + ai->title + suffixName_, ai);
+
+  connect(dlVipFileRun, &DownloadVipFileRunnable::StartGetInfo, this,
+          [&](int trackID) {
+            GetDownloadTaskItemWidget(trackID)->SetStatus("获取下载地址...");
+          });
+
+  connect(dlVipFileRun, &DownloadVipFileRunnable::StartDownload, this,
+          [&](int trackID, AudioItem *) { OnDownloadStart(trackID); });
+
+  connect(dlVipFileRun, &DownloadVipFileRunnable::Finished, this,
+          [&](int trackID) { OnDownloadFinished(trackID, ""); });
+
+  connect(dlVipFileRun, &DownloadVipFileRunnable::DownloadError, this,
+          [&](int trackID, AudioItem *ai, const QString &err) {
+            qWarning() << err;
+            AddDownloadFailedItemWidget(trackID, ai, err);
+
+            auto listItem = downloadingListWidgetItems_.value(trackID);
+            ui_->downloadingListWidget->takeItem(
+                ui_->downloadingListWidget->row(listItem));
+            downloadingListWidgetItems_.remove(trackID);
+
+            SetDownloadFailedCount(downloadFailedCount_ + 1);
+          });
+
+  connect(dlVipFileRun, &DownloadVipFileRunnable::GetInfoError, this,
+          [&](int trackID, AudioItem *ai, const QString &err) {
+            qWarning() << err;
+            AddDownloadFailedItemWidget(trackID, ai,
+                                        "获取下载地址失败: " + err);
+
+            auto listItem = downloadingListWidgetItems_.value(trackID);
+            ui_->downloadingListWidget->takeItem(
+                ui_->downloadingListWidget->row(listItem));
+            downloadingListWidgetItems_.remove(trackID);
+
+            SetDownloadFailedCount(downloadFailedCount_ + 1);
+          });
+
+  pool_->start(dlVipFileRun);
+  audioItems_.append(ai);
 }
 
 double scale = 0;
-void DownloadQueueDialog::StartDownload(QList<AudioItem *> &audioItems,
+
+/*开始下载队列中的文件*/
+void DownloadQueueDialog::StartDownload(QList<AudioItem *> &aiList,
                                         int maxTaskCount,
                                         const QString &downloadDir,
                                         const QString suffixName) {
@@ -61,13 +113,20 @@ void DownloadQueueDialog::StartDownload(QList<AudioItem *> &audioItems,
   suffixName_ = suffixName;
 
   pool_->setMaxThreadCount(maxTaskCount);
-  for (auto &audioItem : audioItems) {
-    DownloadFile(audioItem);
+  for (auto &ai : aiList) {
+    if (QString(ai->url).isEmpty()) {
+      DownloadVipFile(ai);
+    } else {
+      DownloadFile(ai);
+    }
+
+    scale = double(100) / double(aiList.size());
   }
-  scale = double(100) / double(audioItems.size());
 }
-void DownloadQueueDialog::AddItemWidget(int id, const QString &url,
-                                        const QString &fileName) {
+
+/*添加下载中ItemWidget*/
+void DownloadQueueDialog::AddDownloadingItemWidget(int id, const QString &url,
+                                                   const QString &fileName) {
   auto itemWidget = new DownloadTaskItemWidget(fileName, url);
   auto item = new QListWidgetItem(ui_->downloadingListWidget);
   item->setSizeHint(QSize(0, 50));
@@ -75,7 +134,16 @@ void DownloadQueueDialog::AddItemWidget(int id, const QString &url,
   ui_->downloadingListWidget->addItem(item);
   ui_->downloadingListWidget->setItemWidget(item, itemWidget);
   downloadingListWidgetItems_.insert(id, item);
-  qDebug() << item->sizeHint();
+}
+
+void DownloadQueueDialog::AddDownloadFailedItemWidget(int trackId,
+                                                      AudioItem *ai,
+                                                      const QString &err) {
+  Q_UNUSED(trackId);
+  auto listWidgetItem = new QListWidgetItem(ai->title);
+  listWidgetItem->setToolTip(err);
+  listWidgetItem->setData(Qt::UserRole, QVariant::fromValue(ai));
+  ui_->downloadFailedListWidget->addItem(listWidgetItem);
 }
 
 bool DownloadQueueDialog::HasTask() {
@@ -83,17 +151,38 @@ bool DownloadQueueDialog::HasTask() {
 }
 
 void DownloadQueueDialog::closeEvent(QCloseEvent *event) {
-  auto rb = QMessageBox::warning(
-      this, "警告", "是否暂停下载并删除所有任务(不包括已下载文件)?",
-      QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-  if (rb == QMessageBox::Yes) {
-    pool_->clear();
+  if (downloadingListWidgetItems_.isEmpty() && downloadFailedCount_ == 0) {
+    event->accept();
   } else {
-    event->ignore();
+    auto rb = QMessageBox::warning(this, "警告", "是否取消下载?",
+                                   QMessageBox::Yes | QMessageBox::No,
+                                   QMessageBox::No);
+    if (rb == QMessageBox::Yes) {
+      pool_->clear();
+    } else {
+      event->ignore();
+    }
   }
 }
 
-void DownloadQueueDialog::DownloadFinished(int id, const QString &error) {
+/*使用id获取条目Widget*/
+DownloadTaskItemWidget *DownloadQueueDialog::GetDownloadTaskItemWidget(
+    int trackID) {
+  if (downloadingListWidgetItems_.contains(trackID)) {
+    auto widgetItem = downloadingListWidgetItems_.value(trackID, nullptr);
+    return widgetItem->data(Qt::UserRole).value<DownloadTaskItemWidget *>();
+  }
+
+  return nullptr;
+}
+
+void DownloadQueueDialog::SetDownloadFailedCount(int count) {
+  downloadFailedCount_ = count;
+  ui_->tabWidget->setTabText(
+      1, QStringLiteral("下载失败(%1)").arg(downloadFailedCount_));
+}
+
+void DownloadQueueDialog::OnDownloadFinished(int id, const QString &error) {
   /*从 downloadingListWidget 中移除Item*/
   auto listItem = downloadingListWidgetItems_.value(id);
   ui_->downloadingListWidget->takeItem(
@@ -111,15 +200,8 @@ void DownloadQueueDialog::DownloadFinished(int id, const QString &error) {
     for (int i = 0; i < audioItems_.size(); i++) {
       auto &item = audioItems_.at(i);
       if (item->id == id) {
-        auto listWidgetItem = new QListWidgetItem(item->title);
-        listWidgetItem->setToolTip(error);
-        listWidgetItem->setData(Qt::UserRole, QVariant::fromValue(item));
-        ui_->downloadFailedListWidget->addItem(listWidgetItem);
-
-        downloadFailedCount++;
-        ui_->tabWidget->setTabText(
-            1, QStringLiteral("下载失败(%1)").arg(downloadFailedCount));
-
+        AddDownloadFailedItemWidget(id, item, error);
+        SetDownloadFailedCount(downloadFailedCount_ + 1);
         break;
       }
     }
@@ -140,7 +222,7 @@ void DownloadQueueDialog::DownloadFinished(int id, const QString &error) {
   }
 }
 
-void DownloadQueueDialog::DownloadStart(int id) {
+void DownloadQueueDialog::OnDownloadStart(int id) {
   auto &listItem = downloadingListWidgetItems_[id];
   auto variant = listItem->data(Qt::UserRole);
   auto itemWidget = variant.value<DownloadTaskItemWidget *>();
@@ -182,15 +264,12 @@ void DownloadQueueDialog::on_retryBtn_clicked() {
           ui_->downloadFailedListWidget->row(selectedItem));
 
       auto variant = selectedItem->data(Qt::UserRole);
-      auto audioItem = variant.value<AudioItem *>();
-      selectedItems.append(audioItem);
-      AddItemWidget(audioItem->id, audioItem->url, audioItem->title);
+      auto ai = variant.value<AudioItem *>();
+      selectedItems.append(ai);
+      AddDownloadingItemWidget(ai->id, ai->url, ai->title);
     }
 
-    downloadFailedCount -= selectedItems.size();
-    ui_->tabWidget->setTabText(
-        1, QStringLiteral("下载失败(%1)").arg(downloadFailedCount));
-
+    SetDownloadFailedCount(downloadFailedCount_ - selectedItems.size());
     StartDownload(selectedItems, maxTaskCount_, downloadDir_, suffixName_);
   }
 

@@ -6,7 +6,9 @@ DownloadTaskItemWidget::DownloadTaskItemWidget(const QString &fileName,
                                                const QString &url,
                                                QWidget *parent)
     : QWidget(parent) {
-  setFont(QFont("Microsoft YaHei", 9));
+  QFont font;
+  font.setPointSize(9);
+  setFont(font);
 
   fileNameLabel_ = new QLabel(fileName, this);
   urlLabel_ = new QLabel(url, this);
@@ -48,4 +50,8 @@ void DownloadTaskItemWidget::UpdateProgressBar(int value) {
 
 void DownloadTaskItemWidget::SetProgressBarVisible(bool visible) {
   progressBar->setVisible(visible);
+}
+
+QString DownloadTaskItemWidget::GetFileNameText() {
+  return fileNameLabel_->text();
 }

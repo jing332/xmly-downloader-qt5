@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QDateTime>
 #include <QDebug>
+#include <QTranslator>
 
 #include "appevent.h"
 #include "cgo.h"
@@ -61,7 +62,12 @@ extern "C" int start() {
   char **argv = 0;
 
   QApplication app(argc, argv);
-  app.setFont(QFont("Microsoft YaHei", 12));
+  //  app.setFont(QFont("Microsoft YaHei", 12));
+  app.font().setPointSize(12);
+
+  QTranslator translator;
+  translator.load(":/res/qt_zh_CN.qm");
+  app.installTranslator(&translator);
 
   win = new MainWindow();
   win->show();

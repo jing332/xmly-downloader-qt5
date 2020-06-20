@@ -3,13 +3,13 @@
 
 #include <QMetaType>
 
-struct AudioBookInfo {
+struct AlbumInfo {
   const char* title;
   int audioCount;
   int pageCount;
   const char* error;
 
-  ~AudioBookInfo() {
+  ~AlbumInfo() {
     delete[] title;
     delete[] error;
   }
@@ -38,9 +38,9 @@ struct DataError {
   ~DataError() { delete error; }
 };
 
-typedef struct AudioBookInfo* (*CGO_GET_AUDIOBOOK_INFO)(int audiobookId);
-typedef struct DataError* (*CGO_GET_AUDIO_INFO)(int audiobookId, int page,
-                                                int pageSize);
+typedef AlbumInfo* (*CGO_GET_ALBUM_INFO)(int albumID);
+typedef DataError* (*CGO_GET_AUDIO_INFO)(int albumID, int page, int pageSize);
+typedef DataError* (*CGO_GET_VIP_AUDIO_INFO)(int albumID, const char* cookie);
 
 typedef const char* (*CGO_DOWNLOAD_FILE)(const char* url, const char* filePath,
                                          int id);
@@ -55,9 +55,10 @@ class Cgo {
   int setCgo(const QString& funcName, void* funcPtr);
 
  public:
-  CGO_GET_AUDIOBOOK_INFO cgo_getAudiobookInfo = nullptr;
+  CGO_GET_ALBUM_INFO cgo_getAlbumInfo = nullptr;
   CGO_GET_AUDIO_INFO cgo_getAudioInfo = nullptr;
   CGO_DOWNLOAD_FILE cgo_downloadFile = nullptr;
+  CGO_GET_VIP_AUDIO_INFO cgo_getVipAudioInfo = nullptr;
   CGO_GET_FILE_LENGTH cgo_getFileLength = nullptr;
 };
 

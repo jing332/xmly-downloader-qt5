@@ -4,14 +4,19 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QDesktopServices>
+#include <QDialogButtonBox>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMetaType>
 #include <QMouseEvent>
+#include <QPlainTextEdit>
+#include <QScrollBar>
+#include <QTextEdit>
 #include <QToolTip>
 
-#include "runnable/getaudiobookinforunnable.h"
+#include "runnable/getalbuminforunnable.h"
 #include "runnable/getaudioinforunnable.h"
 #include "ui_mainwindow.h"
 
@@ -35,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
                 ui_->tableWidget->selectionModel()->selectedRows().size();
             ui_->selectedCountLabel->setText(
                 QStringLiteral("已选中: <b>%1</b>").arg(QString::number(size)));
+
             if (size > 0) {
               ui_->startDownloadBtn->setEnabled(true);
               ui_->unselectBtn->setEnabled(true);
@@ -94,7 +100,7 @@ void MainWindow::on_selectDirBtn_clicked() {
 void MainWindow::on_parseBtn_clicked() {
   auto audiobookId = ui_->idLineEdit->text().toInt();
   if (0 >= audiobookId) {
-    ui_->statusbar->showMessage("请输入有声小说ID");
+    ui_->statusbar->showMessage("请输入专辑ID");
     ui_->idLineEdit->setFocus();
     return;
   }
@@ -105,12 +111,12 @@ void MainWindow::on_parseBtn_clicked() {
   ui_->tableWidget->setRowCount(0);
 
   ui_->parseBtn->setEnabled(false);
-  ui_->statusbar->showMessage("获取小说信息...", 2000);
+  ui_->statusbar->showMessage("获取专辑信息...", 2000);
 
-  auto getAudioBookInfoRunnable = new GetAudiobookInfoRunnable(audiobookId);
-  connect(getAudioBookInfoRunnable, &GetAudiobookInfoRunnable::finished, this,
-          &MainWindow::GetAudiobookInfoFinished);
-  pool_->start(getAudioBookInfoRunnable);
+  auto getAlbumInfoRunnable = new GetAlbumInfoRunnable(audiobookId);
+  connect(getAlbumInfoRunnable, &GetAlbumInfoRunnable::Finished, this,
+          &MainWindow::OnGetAlbumInfoFinished);
+  pool_->start(getAlbumInfoRunnable);
 }
 
 void MainWindow::on_selectAllBtn_clicked() {
@@ -124,19 +130,20 @@ void MainWindow::on_unselectBtn_clicked() {
 }
 
 void MainWindow::on_startDownloadBtn_clicked() {
-  qDebug() << "download dir: " << downloadDir_;
+  qInfo() << "download dir: " << downloadDir_;
 
-  DownloadQueueDialog downloadQueueDialog(this);
+  DownloadQueueDialog downloadQueueDialog(cookie_, this);
   QList<AudioItem *> selectedItems;
   for (auto &index : ui_->tableWidget->selectionModel()->selectedRows(0)) {
     int row = index.row();
-    downloadQueueDialog.AddItemWidget(audioItems_.at(row)->id,
-                                      audioItems_.at(row)->url,
-                                      audioItems_.at(row)->title + suffixName_);
+
+    downloadQueueDialog.AddDownloadingItemWidget(
+        audioItems_.at(row)->id, audioItems_.at(row)->url,
+        audioItems_.at(row)->title + suffixName_);
     selectedItems.append(audioItems_.at(row));
   }
 
-  //添加任务到下载队列
+  /*添加任务到下载队列*/
   downloadQueueDialog.StartDownload(selectedItems,
                                     ui_->maxTaskCountSpinBox->value(),
                                     downloadDir_, suffixName_);
@@ -145,13 +152,14 @@ void MainWindow::on_startDownloadBtn_clicked() {
   };
 }
 
+/*表格的右键菜单*/
 void MainWindow::on_tableWidget_customContextMenuRequested(const QPoint &pos) {
   QMenu menu;
-  QAction action("复制");
+  QAction action("复制", this);
+
   connect(&action, &QAction::triggered, this, [&]() {
     auto item = ui_->tableWidget->itemAt(pos);
     if (item) {
-      qDebug() << "copy text: " << item->text();
       qApp->clipboard()->setText(item->text());
     }
   });
@@ -159,37 +167,37 @@ void MainWindow::on_tableWidget_customContextMenuRequested(const QPoint &pos) {
   menu.exec(QCursor::pos());
 }
 
+/*文件后缀名修改*/
 void MainWindow::on_mp3RadioBtn_clicked() {
   suffixName_ = QStringLiteral(".mp3");
 }
-
 void MainWindow::on_m4aRadioBtn_clicked() {
   suffixName_ = QStringLiteral(".m4a");
 }
 
-void MainWindow::GetAudiobookInfoFinished(AudioBookInfo *info,
-                                          int audiobookId) {
-  QString error(info->error);
+/*获取专辑信息完成*/
+void MainWindow::OnGetAlbumInfoFinished(AlbumInfo *ai, int audiobookId) {
+  QString error(ai->error);
   if (error.isEmpty()) {
     auto text =
         QStringLiteral(
             "小说名称: <a href='%3'><span style='text-decoration: underline; "
             "color:black;'>%1</span></a>\t音频数量: <b>%2</b>")
-            .arg(info->title)
-            .arg(info->audioCount)
+            .arg(ai->title)
+            .arg(ai->audioCount)
             .arg(QStringLiteral("https://www.ximalaya.com/youshengshu/")
                      .append(QString::number(audiobookId)));
     ui_->titleLabel->setText(text);
 
-    int number = info->audioCount / 100;
-    int j = info->audioCount % 100;
+    int number = ai->audioCount / 100;
+    int j = ai->audioCount % 100;
     if (j > 0) number++;
     for (int i = 1; i < number + 1; i++) {
       auto runnable = new GetAudioInfoRunnable(audiobookId, i, 100);
-      connect(runnable, &GetAudioInfoRunnable::finished, this,
-              &MainWindow::GetAudioInfoFinished);
-      connect(runnable, &GetAudioInfoRunnable::error, this,
-              &MainWindow::GetAudioInfoError);
+      connect(runnable, &GetAudioInfoRunnable::Finished, this,
+              &MainWindow::OnGetAudioInfoFinished);
+      connect(runnable, &GetAudioInfoRunnable::Error, this,
+              &MainWindow::OnGetAudioInfoError);
       pool_->start(runnable);
     }
   } else {
@@ -199,33 +207,40 @@ void MainWindow::GetAudiobookInfoFinished(AudioBookInfo *info,
     ui_->parseBtn->setEnabled(true);
   }
 
-  delete info;
+  delete ai;
 }
 
-void MainWindow::GetAudioInfoFinished(const QList<AudioItem *> &audioItemList) {
+/*获取音频信息完成*/
+void MainWindow::OnGetAudioInfoFinished(
+    const QList<AudioItem *> &audioItemList) {
   timer_->start(1000);
   for (auto &audioItem : audioItemList) {
-    if (!QString(audioItem->url).isEmpty()) {
-      ui_->statusbar->showMessage(audioItem->title, 2000);
-      audioItems_.append(audioItem);
+    ui_->statusbar->showMessage(audioItem->title, 2000);
+    audioItems_.append(audioItem);
 
-      int rowCount = ui_->tableWidget->rowCount();
-      ui_->tableWidget->insertRow(rowCount);
+    int rowCount = ui_->tableWidget->rowCount();
+    ui_->tableWidget->insertRow(rowCount);
 
-      ui_->tableWidget->setItem(rowCount, 0,
-                                new QTableWidgetItem(audioItem->title));
-      ui_->tableWidget->setItem(
-          rowCount, 1, new QTableWidgetItem(QString::number(audioItem->id)));
+    ui_->tableWidget->setItem(rowCount, 0,
+                              new QTableWidgetItem(audioItem->title));
+    ui_->tableWidget->setItem(
+        rowCount, 1, new QTableWidgetItem(QString::number(audioItem->id)));
+
+    if (QString(audioItem->url).isEmpty()) {
+      ui_->tableWidget->setItem(rowCount, 2,
+                                new QTableWidgetItem("无音频地址"));
+    } else {
       ui_->tableWidget->setItem(rowCount, 2,
                                 new QTableWidgetItem(audioItem->url));
     }
   }
 }
 
-void MainWindow::GetAudioInfoError(const QString reason, int audiobookId,
-                                   int page, int pageSize) {
+/*获取音频信息失败*/
+void MainWindow::OnGetAudioInfoError(const QString reason, int audiobookId,
+                                     int page, int pageSize) {
   auto err = QStringLiteral(
-                 "get audiobook info fail: {reason: %1, audiobookId: %2, "
+                 "get album info fail: {reason: %1, audiobookId: %2, "
                  "page: %3, pageSize: %4}")
                  .arg(reason)
                  .arg(audiobookId, page, pageSize);
@@ -246,13 +261,57 @@ void MainWindow::on_titleLabel_linkActivated(const QString &link) {
   }
 }
 
+/*打开下载目录*/
 qint64 firstTime = 0;
 void MainWindow::on_downloadDirLabel_linkActivated(const QString &) {
   qint64 secondTime = QDateTime::currentMSecsSinceEpoch();
-  //双击
+  /*双击*/
   if (800 < secondTime - firstTime) {
     firstTime = secondTime;
   } else {
     QDesktopServices::openUrl(downloadDir_);
+  }
+}
+
+void MainWindow::on_cookieBtn_clicked() {
+  QInputDialog inputDlg(this);
+  inputDlg.setWindowFlag(Qt::WindowContextHelpButtonHint, false);
+  inputDlg.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
+  inputDlg.setWindowTitle("设置Cookie");
+
+  auto label = inputDlg.findChild<QLabel *>();
+  label->setTextFormat(Qt::TextFormat::RichText);
+  inputDlg.setLabelText(
+      "请输入包含 <b>\"1&&_token=\"</b> 的Cookie"
+      "<br/>比如: <font color=gray>1&&_token=123456789&&AbCDeF</font> ...");
+
+  auto okBtn =
+      inputDlg.findChild<QDialogButtonBox *>()->button(QDialogButtonBox::Ok);
+  auto textEdit = inputDlg.findChild<QPlainTextEdit *>();
+  /*按宽度自动换行*/
+  textEdit->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+  textEdit->setPlainText(cookie_);
+  textEdit->setFocus();
+
+  okBtn->setDisabled(true);
+  connect(textEdit, &QPlainTextEdit::textChanged, this, [&] {
+    if (textEdit->toPlainText().contains("1&_token=")) {
+      okBtn->setEnabled(true);
+    } else {
+      okBtn->setDisabled(true);
+    }
+  });
+
+  if (QDialog::Accepted == inputDlg.exec()) {
+    auto cookie = textEdit->toPlainText();
+    if (cookie.isEmpty()) {
+      ui_->cookieBtn->setText("未设置Cookie");
+      ui_->cookieBtn->setToolTip("");
+      cookie_.clear();
+    } else {
+      ui_->cookieBtn->setText("已设置Cookie");
+      ui_->cookieBtn->setToolTip(cookie);
+      cookie_ = cookie;
+    }
   }
 }
