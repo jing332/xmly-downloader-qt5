@@ -23,12 +23,12 @@ class DownloadQueueDialog : public QDialog {
   ~DownloadQueueDialog();
 
   void SetMaxThreadCount(int count);
-  void DownloadFile(int id, const QString &url, const QString &fileName);
   void DownloadFile(AudioItem *audioItem);
   void DownloadVipFile(AudioItem *ai);
 
   void StartDownload(QList<AudioItem *> &audioItems, int maxTaskCount,
-                     const QString &downloadDir, const QString suffixName);
+                     const QString &downloadDir, const QString suffixName,
+                     bool isAddNum);
   void AddDownloadingItemWidget(int id, const QString &url,
                                 const QString &filePath);
   void AddDownloadFailedItemWidget(int trackId, AudioItem *ai,
@@ -58,6 +58,7 @@ class DownloadQueueDialog : public QDialog {
   QMap<int, QListWidgetItem *> downloadingListWidgetItems_;
   QList<AudioItem *> audioItems_;
 
+  bool isAddNum_ = true;
   int downloadFailedCount_ = 0;
   int taskCount_ = 0;
   int maxTaskCount_ = 1;

@@ -19,6 +19,8 @@ struct AudioItem {
   int id;
   const char* title;
   const char* url;
+  char* number;
+
   ~AudioItem() {
     delete title;
     delete url;

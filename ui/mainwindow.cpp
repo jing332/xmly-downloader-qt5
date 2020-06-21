@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
   ui_->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
   ui_->tableWidget->verticalHeader()->setDisabled(true);
 
-  QStringList header = {QStringLiteral("标题"), QStringLiteral("音频ID"),
+  QStringList header = {QStringLiteral("音频名称"), QStringLiteral("音频ID"),
                         QStringLiteral("音频地址")};
   ui_->tableWidget->setHorizontalHeaderLabels(header);
   ui_->tableWidget->horizontalHeader()->setStretchLastSection(true);
@@ -87,6 +87,17 @@ MainWindow::~MainWindow() {
   qDeleteAll(audioItems_);
 }
 
+/*获取int的位数*/
+int MainWindow::GetIntWidth(int n) {
+  int count = 0;
+  while (n != 0) {
+    n = n / 10;
+    count++;
+  }
+
+  return count;
+}
+
 void MainWindow::Timeout() { ui_->parseBtn->setEnabled(true); }
 
 void MainWindow::on_selectDirBtn_clicked() {
@@ -98,8 +109,8 @@ void MainWindow::on_selectDirBtn_clicked() {
 }
 
 void MainWindow::on_parseBtn_clicked() {
-  auto audiobookId = ui_->idLineEdit->text().toInt();
-  if (0 >= audiobookId) {
+  auto albumID = ui_->idLineEdit->text().toInt();
+  if (0 >= albumID) {
     ui_->statusbar->showMessage("请输入专辑ID");
     ui_->idLineEdit->setFocus();
     return;
@@ -113,7 +124,7 @@ void MainWindow::on_parseBtn_clicked() {
   ui_->parseBtn->setEnabled(false);
   ui_->statusbar->showMessage("获取专辑信息...", 2000);
 
-  auto getAlbumInfoRunnable = new GetAlbumInfoRunnable(audiobookId);
+  auto getAlbumInfoRunnable = new GetAlbumInfoRunnable(albumID);
   connect(getAlbumInfoRunnable, &GetAlbumInfoRunnable::Finished, this,
           &MainWindow::OnGetAlbumInfoFinished);
   pool_->start(getAlbumInfoRunnable);
@@ -140,14 +151,20 @@ void MainWindow::on_startDownloadBtn_clicked() {
     downloadQueueDialog.AddDownloadingItemWidget(
         audioItems_.at(row)->id, audioItems_.at(row)->url,
         audioItems_.at(row)->title + suffixName_);
+
+    audioItems_.at(row)->number = const_cast<char *>(
+        QString("%1")
+            .arg(row + 1, GetIntWidth(audioItems_.size()), 10, QLatin1Char('0'))
+            .toStdString()
+            .c_str());
     selectedItems.append(audioItems_.at(row));
   }
 
   /*添加任务到下载队列*/
   downloadQueueDialog.StartDownload(
       selectedItems, ui_->maxTaskCountSpinBox->value(),
-      downloadDir_ + "/" + albumName_, suffixName_);
-  if (downloadQueueDialog.exec() == QDialog::Accepted) {
+      downloadDir_ + "/" + albumName_, suffixName_, isAddNum);
+  if (QDialog::Accepted == downloadQueueDialog.exec()) {
     ui_->statusbar->showMessage("所选文件下载完成!");
   };
 }
@@ -167,6 +184,10 @@ void MainWindow::on_tableWidget_customContextMenuRequested(const QPoint &pos) {
   menu.exec(QCursor::pos());
 }
 
+void MainWindow::on_addNumCheckBox_clicked() {
+  isAddNum = ui_->addNumCheckBox->isChecked();
+}
+
 /*文件后缀名修改*/
 void MainWindow::on_mp3RadioBtn_clicked() {
   suffixName_ = QStringLiteral(".mp3");
@@ -176,7 +197,7 @@ void MainWindow::on_m4aRadioBtn_clicked() {
 }
 
 /*获取专辑信息完成*/
-void MainWindow::OnGetAlbumInfoFinished(AlbumInfo *ai, int audiobookId) {
+void MainWindow::OnGetAlbumInfoFinished(AlbumInfo *ai, int albumID) {
   QString error(ai->error);
   if (error.isEmpty()) {
     auto text =
@@ -186,7 +207,7 @@ void MainWindow::OnGetAlbumInfoFinished(AlbumInfo *ai, int audiobookId) {
             .arg(ai->title)
             .arg(ai->audioCount)
             .arg(QStringLiteral("https://www.ximalaya.com/youshengshu/")
-                     .append(QString::number(audiobookId)));
+                     .append(QString::number(albumID)));
     ui_->titleLabel->setText(text);
     albumName_ = QString(ai->title).replace(fileNameReg_, " ");
 
@@ -194,7 +215,7 @@ void MainWindow::OnGetAlbumInfoFinished(AlbumInfo *ai, int audiobookId) {
     int j = ai->audioCount % 100;
     if (j > 0) number++;
     for (int i = 1; i < number + 1; i++) {
-      auto runnable = new GetAudioInfoRunnable(audiobookId, i, 100);
+      auto runnable = new GetAudioInfoRunnable(albumID, i, 100);
       connect(runnable, &GetAudioInfoRunnable::Finished, this,
               &MainWindow::OnGetAudioInfoFinished);
       connect(runnable, &GetAudioInfoRunnable::Error, this,
@@ -202,7 +223,7 @@ void MainWindow::OnGetAlbumInfoFinished(AlbumInfo *ai, int audiobookId) {
       pool_->start(runnable);
     }
   } else {
-    qWarning() << "get audiobook info fail:" << error;
+    qWarning() << "get album info fail:" << error;
     ui_->statusbar->showMessage(
         QStringLiteral("获取小说信息失败: ").append(error));
     ui_->parseBtn->setEnabled(true);
@@ -215,36 +236,34 @@ void MainWindow::OnGetAlbumInfoFinished(AlbumInfo *ai, int audiobookId) {
 void MainWindow::OnGetAudioInfoFinished(
     const QList<AudioItem *> &audioItemList) {
   timer_->start(1000);
-  for (auto &audioItem : audioItemList) {
-    ui_->statusbar->showMessage(audioItem->title, 2000);
-    audioItems_.append(audioItem);
+  for (auto &ai : audioItemList) {
+    ui_->statusbar->showMessage(ai->title, 2000);
+    audioItems_.append(ai);
 
     int rowCount = ui_->tableWidget->rowCount();
     ui_->tableWidget->insertRow(rowCount);
 
-    ui_->tableWidget->setItem(rowCount, 0,
-                              new QTableWidgetItem(audioItem->title));
-    ui_->tableWidget->setItem(
-        rowCount, 1, new QTableWidgetItem(QString::number(audioItem->id)));
+    ui_->tableWidget->setItem(rowCount, 0, new QTableWidgetItem(ai->title));
+    ui_->tableWidget->setItem(rowCount, 1,
+                              new QTableWidgetItem(QString::number(ai->id)));
 
-    if (QString(audioItem->url).isEmpty()) {
+    if (QString(ai->url).isEmpty()) {
       ui_->tableWidget->setItem(rowCount, 2,
                                 new QTableWidgetItem("无音频地址"));
     } else {
-      ui_->tableWidget->setItem(rowCount, 2,
-                                new QTableWidgetItem(audioItem->url));
+      ui_->tableWidget->setItem(rowCount, 2, new QTableWidgetItem(ai->url));
     }
   }
 }
 
 /*获取音频信息失败*/
-void MainWindow::OnGetAudioInfoError(const QString reason, int audiobookId,
+void MainWindow::OnGetAudioInfoError(const QString reason, int albumID,
                                      int page, int pageSize) {
   auto err = QStringLiteral(
                  "get album info fail: {reason: %1, audiobookId: %2, "
                  "page: %3, pageSize: %4}")
                  .arg(reason)
-                 .arg(audiobookId, page, pageSize);
+                 .arg(albumID, page, pageSize);
   qWarning() << err;
   ui_->statusbar->showMessage(
       QStringLiteral("获取音频列表失败: %1").arg(reason));
@@ -266,7 +285,7 @@ void MainWindow::on_titleLabel_linkActivated(const QString &link) {
 qint64 firstTime = 0;
 void MainWindow::on_downloadDirLabel_linkActivated(const QString &) {
   qint64 secondTime = QDateTime::currentMSecsSinceEpoch();
-  /*双击*/
+  /*判断双击*/
   if (800 < secondTime - firstTime) {
     firstTime = secondTime;
   } else {

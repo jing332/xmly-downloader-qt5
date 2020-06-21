@@ -35,28 +35,40 @@ void DownloadQueueDialog::SetMaxThreadCount(int count) {
   pool_->setMaxThreadCount(count);
 }
 
-void DownloadQueueDialog::DownloadFile(int id, const QString &url,
-                                       const QString &fileName) {
-  auto downloadRunnable = new DownloadRunnable(
-      id, url, downloadDir_ + "/" + fileName + suffixName_);
+/*下载免费音频文件*/
+void DownloadQueueDialog::DownloadFile(AudioItem *ai) {
+  QString filePath;
+  if (isAddNum_) {
+    filePath = QStringLiteral("%1/%2 %3.%4")
+                   .arg(downloadDir_, ai->number, ai->title, suffixName_);
+  } else {
+    filePath =
+        QStringLiteral("%1/%3.%4").arg(downloadDir_, ai->title, suffixName_);
+  }
+
+  auto downloadRunnable = new DownloadRunnable(ai->id, ai->url, filePath);
   connect(downloadRunnable, &DownloadRunnable::Start, this,
           &DownloadQueueDialog::OnDownloadStart);
   connect(downloadRunnable, &DownloadRunnable::Finished, this,
           &DownloadQueueDialog::OnDownloadFinished);
-
   pool_->start(downloadRunnable);
-}
 
-/*下载免费音频文件*/
-void DownloadQueueDialog::DownloadFile(AudioItem *ai) {
-  DownloadFile(ai->id, ai->url, ai->title);
   audioItems_.append(ai);
 }
 
 /*下载Vip音频文件*/
 void DownloadQueueDialog::DownloadVipFile(AudioItem *ai) {
-  auto dlVipFileRun = new DownloadVipFileRunnable(
-      ai->id, cookie_, downloadDir_ + "/" + ai->title + suffixName_, ai);
+  QString filePath;
+  if (isAddNum_) {
+    filePath = QStringLiteral("%1/%2 %3.%4")
+                   .arg(downloadDir_, ai->number, ai->title, suffixName_);
+  } else {
+    filePath =
+        QStringLiteral("%1/%3.%4").arg(downloadDir_, ai->title, suffixName_);
+  }
+
+  auto dlVipFileRun =
+      new DownloadVipFileRunnable(ai->id, cookie_, filePath, ai);
 
   connect(dlVipFileRun, &DownloadVipFileRunnable::StartGetInfo, this,
           [&](int trackID) {
@@ -106,7 +118,9 @@ double scale = 0;
 void DownloadQueueDialog::StartDownload(QList<AudioItem *> &aiList,
                                         int maxTaskCount,
                                         const QString &downloadDir,
-                                        const QString suffixName) {
+                                        const QString suffixName,
+                                        bool isAddNum) {
+  isAddNum_ = isAddNum;
   pool_->setMaxThreadCount(maxTaskCount);
   maxTaskCount_ = maxTaskCount;
   downloadDir_ = downloadDir;
@@ -270,7 +284,8 @@ void DownloadQueueDialog::on_retryBtn_clicked() {
     }
 
     SetDownloadFailedCount(downloadFailedCount_ - selectedItems.size());
-    StartDownload(selectedItems, maxTaskCount_, downloadDir_, suffixName_);
+    StartDownload(selectedItems, maxTaskCount_, downloadDir_, suffixName_,
+                  isAddNum_);
   }
 
   if (ui_->downloadFailedListWidget->model()->rowCount() == 0) {

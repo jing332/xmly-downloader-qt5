@@ -21,6 +21,9 @@ class MainWindow : public QMainWindow {
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
+ private:
+  int GetIntWidth(int n);
+
  private slots:
   void on_selectDirBtn_clicked();
   void on_parseBtn_clicked();
@@ -30,6 +33,7 @@ class MainWindow : public QMainWindow {
   void on_downloadDirLabel_linkActivated(const QString &link);
   void on_tableWidget_customContextMenuRequested(const QPoint &pos);
   void on_titleLabel_linkActivated(const QString &link);
+  void on_addNumCheckBox_clicked();
   void on_mp3RadioBtn_clicked();
   void on_m4aRadioBtn_clicked();
 
@@ -52,11 +56,18 @@ class MainWindow : public QMainWindow {
   QTimer *timer_;
   QThreadPool *pool_;
 
+  /*是否在文件名前添加序号*/
+  bool isAddNum = true;
+  /*专辑名称*/
   QString albumName_;
+  /*下载地址*/
   QString downloadDir_;
+  /*Cookie 非免费专辑必填*/
   QString cookie_;
 
+  /*文件后缀名*/
   QString suffixName_ = QStringLiteral(".m4a");
+  /*特殊字符的正则表达式*/
   QRegularExpression fileNameReg_ = QRegularExpression("[\\:*?\"<>|]");
 };
 #endif  // MAINWINDOW_H

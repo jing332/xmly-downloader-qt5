@@ -44,6 +44,7 @@ import (
 		int id;
 		char* title;
 		char* url;
+		char* number;
 	} AudioItem;
 
   	extern void init();
@@ -99,6 +100,7 @@ import (
 		p->id = id;
 		p->title = title;
 		p->url = url;
+		p->number = NULL;
 		return p;
 	}
 

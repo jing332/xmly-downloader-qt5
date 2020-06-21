@@ -180,7 +180,7 @@
        <widget class="QPushButton" name="selectAllBtn">
         <property name="minimumSize">
          <size>
-          <width>100</width>
+          <width>80</width>
           <height>35</height>
          </size>
         </property>
@@ -199,7 +199,7 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>100</width>
+          <width>80</width>
           <height>35</height>
          </size>
         </property>
@@ -263,6 +263,20 @@
         </property>
         <property name="text">
          <string>下载选中音频</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="addNumCheckBox">
+        <property name="text">
+         <string>在文件名
+前添加序号</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="tristate">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
