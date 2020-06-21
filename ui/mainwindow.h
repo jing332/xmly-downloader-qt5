@@ -52,9 +52,11 @@ class MainWindow : public QMainWindow {
   QTimer *timer_;
   QThreadPool *pool_;
 
-  QString cookie_;
+  QString albumName_;
   QString downloadDir_;
+  QString cookie_;
+
   QString suffixName_ = QStringLiteral(".m4a");
-  QRegularExpression specialCharReg = QRegularExpression("[\\:*?\"<>|]");
+  QRegularExpression fileNameReg_ = QRegularExpression("[\\:*?\"<>|]");
 };
 #endif  // MAINWINDOW_H

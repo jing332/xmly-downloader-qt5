@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>喜马拉雅有声小说批量下载器(仅支持免费音频)  注: 此工具仅为学习交流使用， 严禁商业用途！</string>
+   <string>喜马拉雅有声小说批量下载器(此工具仅为学习交流使用, 音频版权归喜马拉雅FM所有.)</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../xmly-downloader-qt5.qrc">

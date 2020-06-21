@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
           });
   connect(ui_->statusbar, &QStatusBar::customContextMenuRequested, this, [&]() {
     QMenu menu;
-    QAction action("复制");
+    QAction action("复制", this);
     connect(&action, &QAction::triggered, this, [&]() {
       qDebug() << "copy statusBar message:" << ui_->statusbar->currentMessage();
       qApp->clipboard()->setText(ui_->statusbar->currentMessage());
@@ -130,7 +130,7 @@ void MainWindow::on_unselectBtn_clicked() {
 }
 
 void MainWindow::on_startDownloadBtn_clicked() {
-  qInfo() << "download dir: " << downloadDir_;
+  qInfo() << "download dir: " << downloadDir_ + "/" + albumName_;
 
   DownloadQueueDialog downloadQueueDialog(cookie_, this);
   QList<AudioItem *> selectedItems;
@@ -144,9 +144,9 @@ void MainWindow::on_startDownloadBtn_clicked() {
   }
 
   /*添加任务到下载队列*/
-  downloadQueueDialog.StartDownload(selectedItems,
-                                    ui_->maxTaskCountSpinBox->value(),
-                                    downloadDir_, suffixName_);
+  downloadQueueDialog.StartDownload(
+      selectedItems, ui_->maxTaskCountSpinBox->value(),
+      downloadDir_ + "/" + albumName_, suffixName_);
   if (downloadQueueDialog.exec() == QDialog::Accepted) {
     ui_->statusbar->showMessage("所选文件下载完成!");
   };
@@ -188,6 +188,7 @@ void MainWindow::OnGetAlbumInfoFinished(AlbumInfo *ai, int audiobookId) {
             .arg(QStringLiteral("https://www.ximalaya.com/youshengshu/")
                      .append(QString::number(audiobookId)));
     ui_->titleLabel->setText(text);
+    albumName_ = QString(ai->title).replace(fileNameReg_, " ");
 
     int number = ai->audioCount / 100;
     int j = ai->audioCount % 100;

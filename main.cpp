@@ -62,8 +62,7 @@ extern "C" int start() {
   char **argv = 0;
 
   QApplication app(argc, argv);
-  //  app.setFont(QFont("Microsoft YaHei", 12));
-  app.font().setPointSize(12);
+  qApp->font().setPointSize(12);
 
   QTranslator translator;
   translator.load(":/res/qt_zh_CN.qm");
