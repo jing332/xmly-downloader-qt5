@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -47,6 +49,16 @@ import (
 		char* number;
 	} AudioItem;
 
+	typedef struct
+	{
+		int ret;
+		char* msg;
+
+		int uid;
+		int isVip;
+		char* nickName;
+	} UserInfo;
+
   	extern void init();
    	extern int start();
    	extern void drv_cgo_callback(void*, void*);
@@ -58,18 +70,21 @@ import (
 		char* _cgo_getAudioInfo = "cgo_getAudioInfo";
 		char* _cgo_getVipAudioInfo = "cgo_getVipAudioInfo";
 		char* _cgo_downloadFile = "cgo_downloadFile";
+		char* _cgo_getUserInfo = "cgo_getUserInfo";
 		//char* _cgo_getFileLength = "cgo_getFileLength";
 
 		extern void* cgoGetAlbumInfo(int audiobookId);
 		extern DataError* cgoGetAudioInfo(int audiobookId, int page, int pageSize);
 		extern DataError* cgoGetVipAudioInfo(int trackID, char* cookie);
 		extern char* cgoDownloadFile(char* url, char* filePath, int id);
+		extern DataError* cgoGetUserInfo(char* cookie);
 		//extern DataError* cgoGetFileLength(char* url);
 
 		drv_cgo_callback(_cgo_getAlbumInfo, &cgoGetAlbumInfo);
 		drv_cgo_callback(_cgo_getAudioInfo, &cgoGetAudioInfo);
 		drv_cgo_callback(_cgo_getVipAudioInfo, &cgoGetVipAudioInfo);
 		drv_cgo_callback(_cgo_downloadFile, &cgoDownloadFile);
+		drv_cgo_callback(_cgo_getUserInfo, &cgoGetUserInfo);
 		//drv_cgo_callback(_cgo_getFileLength, &cgoGetFileLength);
    	}
 
@@ -150,6 +165,18 @@ import (
 		dataError->error = NULL;
 
 		return dataError;
+	}
+
+    static inline void* newUserInfo(int ret, char* msg, int uid, int isVip, char* nickName)
+	{
+		UserInfo *p = (UserInfo*)malloc(sizeof(UserInfo));
+		p->ret = ret;
+		p->msg = msg;
+		p->uid = uid;
+		p->isVip = isVip;
+		p->nickName = nickName;
+
+		return p;
 	}
 
 	//static inline void setCArray(void **pp, void *pointer, int length)
@@ -288,6 +315,52 @@ func cgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 	}
 
 	return nil
+}
+
+type UserInfo struct {
+	Ret  int    `json:"ret"`
+	Msg  string `json:"msg"`
+	Data struct {
+		UID      int    `json:"uid"`
+		Nickname string `json:"nickname"`
+		IsVip    bool   `json:"isVip"`
+	} `json:"data"`
+}
+
+//export cgoGetUserInfo
+func cgoGetUserInfo(cookie *C.char) *C.DataError {
+	req, err := http.NewRequest("GET", "https://www.ximalaya.com/revision/main/getCurrentUser", nil)
+	if err != nil {
+		return C.newDataError(nil, C.CString(err.Error()))
+	}
+
+	req.Header.Set("Cookie", C.GoString(cookie))
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4139.0 Safari/537.36 Edg/84.0.516.1")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return C.newDataError(nil, C.CString("请求失败:"+err.Error()))
+	}
+
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+
+	var ui UserInfo
+	err = jsoniter.Unmarshal(data, &ui)
+	if err != nil {
+		return C.newDataError(nil, C.CString("解析json失败:"+err.Error()))
+	}
+
+	isVip := 0
+	if ui.Data.IsVip {
+		isVip = 1
+	}
+	var p unsafe.Pointer
+	p = C.newUserInfo(C.int(ui.Ret), C.CString(ui.Msg), C.int(ui.Data.UID), C.int(isVip), C.CString(ui.Data.Nickname))
+
+	return C.newData(p)
 }
 
 var client = http.Client{}

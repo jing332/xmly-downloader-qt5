@@ -13,7 +13,8 @@ void GetVipAudioInfoRunnable::run() {
       trackID_, cookie_.toStdString().c_str());
 
   if (dataErr->error) {
-    emit Error(trackID_, dataErr->error);
+    emit Error(trackID_, QString(dataErr->error));
+    delete dataErr;
     return;
   }
 

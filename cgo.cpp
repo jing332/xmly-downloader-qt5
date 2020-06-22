@@ -18,7 +18,9 @@ int Cgo::setCgo(const QString &funcName, void *funcPtr) {
     cgo_getVipAudioInfo = (CGO_GET_VIP_AUDIO_INFO)funcPtr;
   else if (funcName == QStringLiteral("cgo_downloadFile"))
     cgo_downloadFile = (CGO_DOWNLOAD_FILE)funcPtr;
-  else if (funcName == QStringLiteral("cgo_getFileLength"))
+  else if (funcName == QStringLiteral("cgo_getUserInfo")) {
+    cgo_getUserInfo = (CGO_GET_USER_INFO)funcPtr;
+  } else if (funcName == QStringLiteral("cgo_getFileLength"))
     cgo_getFileLength = (CGO_GET_FILE_LENGTH)funcPtr;
 
   return 1;

@@ -53,8 +53,8 @@ class DownloadQueueDialog : public QDialog {
 
  private:
   Ui::DownloadQueueDialog *ui_;
-  QThreadPool *pool_ = nullptr;
 
+  QThreadPool *pool_ = nullptr;
   QMap<int, QListWidgetItem *> downloadingListWidgetItems_;
   QList<AudioItem *> audioItems_;
 

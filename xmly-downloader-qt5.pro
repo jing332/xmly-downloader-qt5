@@ -33,7 +33,9 @@ SOURCES += \
     runnable/downloadvipfilerunnable.cpp \
     runnable/getalbuminforunnable.cpp \
     runnable/getaudioinforunnable.cpp \
+    runnable/getuserinforunnable.cpp \
     runnable/getvipaudioinforunnable.cpp \
+    ui/cookieinputdialog.cpp \
     ui/downloadqueuedialog.cpp \
     ui/downloadtaskitemwidget.cpp \
     ui/mainwindow.cpp
@@ -45,7 +47,9 @@ HEADERS += \
   runnable/downloadvipfilerunnable.h \
   runnable/getalbuminforunnable.h \
   runnable/getaudioinforunnable.h \
+  runnable/getuserinforunnable.h \
   runnable/getvipaudioinforunnable.h \
+  ui/cookieinputdialog.h \
   ui/downloadqueuedialog.h \
   ui/downloadtaskitemwidget.h \
   ui/mainwindow.h
@@ -56,6 +60,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 FORMS += \
+  ui/cookieinputdialog.ui \
   ui/downloadqueuedialog.ui \
   ui/mainwindow.ui
 

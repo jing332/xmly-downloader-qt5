@@ -13,8 +13,8 @@
 DownloadQueueDialog::DownloadQueueDialog(const QString &cookie, QWidget *parent)
     : QDialog(parent), ui_(new Ui::DownloadQueueDialog), cookie_(cookie) {
   ui_->setupUi(this);
-
   setWindowFlag(Qt::WindowContextHelpButtonHint, false);
+
   pool_ = new QThreadPool(this);
   ui_->progressBar->setValue(0);
 

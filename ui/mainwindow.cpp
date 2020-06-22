@@ -16,6 +16,7 @@
 #include <QTextEdit>
 #include <QToolTip>
 
+#include "cookieinputdialog.h"
 #include "runnable/getalbuminforunnable.h"
 #include "runnable/getaudioinforunnable.h"
 #include "ui_mainwindow.h"
@@ -164,6 +165,7 @@ void MainWindow::on_startDownloadBtn_clicked() {
   downloadQueueDialog.StartDownload(
       selectedItems, ui_->maxTaskCountSpinBox->value(),
       downloadDir_ + "/" + albumName_, suffixName_, isAddNum);
+
   if (QDialog::Accepted == downloadQueueDialog.exec()) {
     ui_->statusbar->showMessage("所选文件下载完成!");
   };
@@ -294,36 +296,10 @@ void MainWindow::on_downloadDirLabel_linkActivated(const QString &) {
 }
 
 void MainWindow::on_cookieBtn_clicked() {
-  QInputDialog inputDlg(this);
-  inputDlg.setWindowFlag(Qt::WindowContextHelpButtonHint, false);
-  inputDlg.setOption(QInputDialog::UsePlainTextEditForTextInput, true);
-  inputDlg.setWindowTitle("设置Cookie");
-
-  auto label = inputDlg.findChild<QLabel *>();
-  label->setTextFormat(Qt::TextFormat::RichText);
-  inputDlg.setLabelText(
-      "请输入包含 <b>\"1&&_token=\"</b> 的Cookie"
-      "<br/>比如: <font color=gray>1&&_token=123456789&&AbCDeF</font> ...");
-
-  auto okBtn =
-      inputDlg.findChild<QDialogButtonBox *>()->button(QDialogButtonBox::Ok);
-  auto textEdit = inputDlg.findChild<QPlainTextEdit *>();
-  /*按宽度自动换行*/
-  textEdit->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-  textEdit->setPlainText(cookie_);
-  textEdit->setFocus();
-
-  okBtn->setDisabled(true);
-  connect(textEdit, &QPlainTextEdit::textChanged, this, [&] {
-    if (textEdit->toPlainText().contains("1&_token=")) {
-      okBtn->setEnabled(true);
-    } else {
-      okBtn->setDisabled(true);
-    }
-  });
+  CookieInputDialog inputDlg(cookie_, this);
 
   if (QDialog::Accepted == inputDlg.exec()) {
-    auto cookie = textEdit->toPlainText();
+    auto cookie = inputDlg.GetCookie();
     if (cookie.isEmpty()) {
       ui_->cookieBtn->setText("未设置Cookie");
       ui_->cookieBtn->setToolTip("");
