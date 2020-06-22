@@ -15,15 +15,29 @@ struct AlbumInfo {
   }
 };
 
-struct AudioItem {
+struct CgoAudioItem {
   int id;
   const char* title;
   const char* url;
-  char* number;
 
-  ~AudioItem() {
+  ~CgoAudioItem() {
     delete title;
     delete url;
+  }
+};
+Q_DECLARE_METATYPE(CgoAudioItem*)
+
+struct AudioItem {
+  int id;
+  QString title;
+  QString url;
+  QString number;
+
+  AudioItem* fromCgo(CgoAudioItem* ai) {
+    this->id = ai->id;
+    this->title = ai->title;
+    this->url = ai->url;
+    return this;
   }
 };
 Q_DECLARE_METATYPE(AudioItem*)

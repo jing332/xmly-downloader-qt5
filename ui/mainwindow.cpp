@@ -153,11 +153,10 @@ void MainWindow::on_startDownloadBtn_clicked() {
         audioItems_.at(row)->id, audioItems_.at(row)->url,
         audioItems_.at(row)->title + suffixName_);
 
-    audioItems_.at(row)->number = const_cast<char *>(
-        QString("%1")
-            .arg(row + 1, GetIntWidth(audioItems_.size()), 10, QLatin1Char('0'))
-            .toStdString()
-            .c_str());
+    /*设置序号*/
+    audioItems_.at(row)->number = QString("%1").arg(
+        row + 1, GetIntWidth(audioItems_.size()), 10, QLatin1Char('0'));
+
     selectedItems.append(audioItems_.at(row));
   }
 

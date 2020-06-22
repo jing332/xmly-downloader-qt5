@@ -13,10 +13,14 @@ void GetAudioInfoRunnable::run() {
 
   QString err(dataError->error);
   if (err.isEmpty()) {
-    QList<AudioItem*> list;
-    auto array = static_cast<Array*>(dataError->data);
+    QList<AudioItem *> list;
+    auto array = static_cast<Array *>(dataError->data);
     for (int i = 0; i < array->length; i++) {
-      list.append(static_cast<AudioItem*>(array->pointer[i]));
+      auto cgoAi = static_cast<CgoAudioItem *>(array->pointer[i]);
+
+      AudioItem *ai = new AudioItem();
+      list.append(ai->fromCgo(cgoAi));
+      delete cgoAi;
     }
     emit Finished(list);
   } else {

@@ -18,5 +18,8 @@ void GetVipAudioInfoRunnable::run() {
     return;
   }
 
-  emit Finished(trackID_, static_cast<AudioItem *>(dataErr->data));
+  auto cgoAi = static_cast<CgoAudioItem *>(dataErr->data);
+  AudioItem *ai = new AudioItem();
+  emit Finished(trackID_, ai->fromCgo(cgoAi));
+  delete cgoAi;
 }

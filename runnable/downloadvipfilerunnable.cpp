@@ -15,7 +15,7 @@ void DownloadVipFileRunnable::run() {
     emit GetInfoError(trackID_, ai_, dataErr->error);
     return;
   }
-  auto tmpAi = static_cast<AudioItem *>(dataErr->data);
+  auto tmpAi = static_cast<CgoAudioItem *>(dataErr->data);
   emit StartDownload(trackID_, ai_);
 
   /*开始下载文件*/
