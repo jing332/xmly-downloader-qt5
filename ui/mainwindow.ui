@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1020</width>
+    <width>1089</width>
     <height>700</height>
    </rect>
   </property>
@@ -14,15 +14,11 @@
    <string>喜马拉雅有声小说批量下载器(此工具仅为学习交流使用, 音频版权归喜马拉雅FM所有.)</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../xmly-downloader-qt5.qrc">
-    <normaloff>:/res/ximalaya.ico</normaloff>:/res/ximalaya.ico</iconset>
+   <iconset resource="../res/xmly-downloader-qt5.qrc">
+    <normaloff>:/ximalaya.ico</normaloff>:/ximalaya.ico</iconset>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget {
-	font: 12pt &quot;Microsoft YaHei&quot;;
-}
-
-</string>
+   <string notr="true">QWidget{font: 12pt 'Microsoft YaHei'}</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -163,6 +159,37 @@
         <property name="textInteractionFlags">
          <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
         </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>主题:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="themeComboBox">
+        <item>
+         <property name="text">
+          <string>默认</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>淡蓝</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>PS黑</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>扁平白</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>
@@ -406,7 +433,7 @@ font: 9pt &quot;微软雅黑&quot;;</string>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources>
-  <include location="../xmly-downloader-qt5.qrc"/>
+  <include location="../res/xmly-downloader-qt5.qrc"/>
  </resources>
  <connections/>
 </ui>

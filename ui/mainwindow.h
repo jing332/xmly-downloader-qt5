@@ -22,6 +22,7 @@ class MainWindow : public QMainWindow {
   ~MainWindow();
 
  private:
+  void SetStyleSheet(const QString &filePath);
   int GetIntWidth(int n);
 
  private slots:
@@ -44,6 +45,8 @@ class MainWindow : public QMainWindow {
   void Timeout();
 
   void on_cookieBtn_clicked();
+
+  void on_themeComboBox_currentIndexChanged(int index);
 
  signals:
   void AddAudioItem(AudioItem *item);

@@ -65,4 +65,5 @@ FORMS += \
   ui/mainwindow.ui
 
 RESOURCES += \
-  xmly-downloader-qt5.qrc
+  res/xmly-downloader-qt5.qrc \
+  res/qss.qrc

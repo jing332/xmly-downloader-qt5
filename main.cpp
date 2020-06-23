@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QDateTime>
 #include <QDebug>
+#include <QFile>
 #include <QTranslator>
 
 #include "appevent.h"
@@ -13,10 +14,11 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context,
                      const QString &msg) {
   QDateTime time = QDateTime::currentDateTime();
   QString strTime = time.toString("yyyy-MM-dd hh:mm:ss");
-  QString strMessage = QString("\033[31m[%1] %2:%3")
-                           .arg(strTime)
-                           .arg(QString(context.file).remove("/gomc-qt5"))
-                           .arg(context.line);
+  QString strMessage =
+      QString("\033[31m[%1] %2:%3")
+          .arg(strTime)
+          .arg(QString(context.file).remove("\\xmly-downloader-qt5"))
+          .arg(context.line);
   QString strMsg;
   switch (type) {
     case QtDebugMsg:
@@ -62,11 +64,6 @@ extern "C" int start() {
   char **argv = 0;
 
   QApplication app(argc, argv);
-  qApp->font().setPointSize(12);
-
-  QTranslator translator;
-  translator.load(":/res/qt_zh_CN.qm");
-  app.installTranslator(&translator);
 
   win = new MainWindow();
   win->show();

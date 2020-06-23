@@ -24,6 +24,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui_(new Ui::MainWindow) {
   ui_->setupUi(this);
+
   qRegisterMetaType<QList<AudioItem *>>("QList<AudioItem*>");
   qRegisterMetaType<QVector<int>>("QVector<int>");
 
@@ -86,6 +87,14 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() {
   delete ui_;
   qDeleteAll(audioItems_);
+}
+
+/*读取文件并设置样式表*/
+void MainWindow::SetStyleSheet(const QString &filePath) {
+  QFile f(filePath);
+  f.open(QIODevice::ReadOnly | QIODevice::Text);
+  setStyleSheet(f.readAll());
+  f.close();
 }
 
 /*获取int的位数*/
@@ -308,5 +317,26 @@ void MainWindow::on_cookieBtn_clicked() {
       ui_->cookieBtn->setToolTip(cookie);
       cookie_ = cookie;
     }
+  }
+}
+
+void MainWindow::on_themeComboBox_currentIndexChanged(int index) {
+  /*主题文件来自
+   * https://github.com/feiyangqingyun/QWidgetDemo/tree/master/styledemo/other/qss
+   */
+  switch (index) {
+    case 1:  //淡蓝
+      SetStyleSheet(":/qss/lightblue.css");
+      break;
+    case 2:  // PS黑
+      SetStyleSheet(":/qss/psblack.css");
+      break;
+    case 3:  //扁平白
+      SetStyleSheet(":/qss/flatwhite.css");
+      break;
+    case 0:  //默认
+    default:
+      setStyleSheet("QWidget{font: 12pt 'Microsoft YaHei'}");
+      break;
   }
 }

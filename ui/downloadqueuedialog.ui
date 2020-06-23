@@ -51,7 +51,13 @@
 
 QListWidget::Item {
 	border-bottom:1px solid gray;
-}</string>
+}
+
+
+QListWidget::item:hover { 
+    background-color: transparent;
+}
+</string>
          </property>
         </widget>
        </item>
