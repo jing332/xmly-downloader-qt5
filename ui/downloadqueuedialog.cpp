@@ -112,8 +112,6 @@ void DownloadQueueDialog::DownloadVipFile(AudioItem *ai) {
   audioItems_.append(ai);
 }
 
-double scale = 0;
-
 /*开始下载队列中的文件*/
 void DownloadQueueDialog::StartDownload(QList<AudioItem *> &aiList,
                                         int maxTaskCount,
@@ -133,8 +131,6 @@ void DownloadQueueDialog::StartDownload(QList<AudioItem *> &aiList,
     } else {
       DownloadFile(ai);
     }
-
-    scale = double(100) / double(aiList.size());
   }
 }
 
@@ -224,7 +220,8 @@ void DownloadQueueDialog::OnDownloadFinished(int id, const QString &error) {
   /*更新进度条*/
   int completed =
       audioItems_.size() - ui_->downloadingListWidget->model()->rowCount();
-  int value = completed * scale;
+  int value = (float)completed / audioItems_.size() * 100.0;
+
   ui_->progressBar->setValue(value);
   if (value == 100) { /*所有文件下载完成*/
     audioItems_.clear();
@@ -250,8 +247,7 @@ void DownloadQueueDialog::OnUpdateFileLength(int id, long contentLength,
   auto variant = listItem->data(Qt::UserRole);
   auto itemWidget = variant.value<DownloadTaskItemWidget *>();
 
-  itemWidget->UpdateProgressBar(
-      int((double(100) / contentLength) * currentLength));
+  itemWidget->UpdateProgressBar(float(currentLength) / contentLength * 100.0);
   itemWidget->SetStatus(
       QStringLiteral("(%1MB/%2MB)") /*1024k * 1024k = 1048576k = 1MB*/
           .arg(QString::number(double(currentLength) / double(1048576), 'f', 2))
