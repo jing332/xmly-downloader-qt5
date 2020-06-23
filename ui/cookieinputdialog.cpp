@@ -9,6 +9,7 @@
 CookieInputDialog::CookieInputDialog(const QString &cookie, QWidget *parent)
     : QDialog(parent), ui_(new Ui::CookieInputDialog), cookie_(cookie) {
   ui_->setupUi(this);
+  setWindowFlag(Qt::WindowContextHelpButtonHint, false);
 
   ui_->textEdit->setText(cookie_);
 }
