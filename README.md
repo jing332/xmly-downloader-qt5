@@ -4,9 +4,9 @@
 喜马拉雅FM专辑下载器. 使用Go+Qt5编写(Go实现逻辑处理功能, Qt处理GUI, CGO通信). 仅供学习使用.
 
 # Screenshot
-![MainWindow](screenshots/mainwindow.png)
+![MainWindow](screenshots/MainWindow.png)
 
-![DownloadDialog](screenshots/downloaddialog.png)
+![DownloadDialog](screenshots/DownloadDialog.png)
 
 ![lightblue](screenshots/lightblue.png)
 
