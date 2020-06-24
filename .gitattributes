@@ -1,0 +1,5 @@
+*.css linguist-language=cpp
+*.go linguist-language=cpp
+*.h linguist-language=cpp
+*.cc linguist-language=cpp
+*cpp linguist-language=cpp
