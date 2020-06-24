@@ -26,7 +26,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;请输入包含 &lt;span style=&quot; font-weight:600;&quot;&gt;&amp;quot;1&amp;amp;_token=&amp;quot;&lt;/span&gt; 的Cookie&lt;br/&gt;比如: &lt;span style=&quot; color:#808080;&quot;&gt;1&amp;amp;_token=123456789&amp;amp;&amp;amp;AbCDeF&lt;/span&gt; ...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;请输入包含 &lt;span style=&quot; font-weight:600;&quot;&gt;&amp;quot;1&amp;amp;_token=&amp;quot;&lt;/span&gt; 的Cookie&lt;br/&gt;比如: &lt;span style=&quot; color:#808080;&quot;&gt;1&amp;amp;_token=123456789&amp;amp;AbCDeF&lt;/span&gt; ...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>

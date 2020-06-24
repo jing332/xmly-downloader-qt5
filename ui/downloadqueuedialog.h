@@ -29,8 +29,7 @@ class DownloadQueueDialog : public QDialog {
   void StartDownload(QList<AudioItem *> &audioItems, int maxTaskCount,
                      const QString &downloadDir, const QString suffixName,
                      bool isAddNum);
-  void AddDownloadingItemWidget(int id, const QString &url,
-                                const QString &filePath);
+  void AddDownloadingItemWidget(int id, const QString &filePath);
   void AddDownloadFailedItemWidget(int trackId, AudioItem *ai,
                                    const QString &err);
   bool HasTask();
@@ -59,6 +58,7 @@ class DownloadQueueDialog : public QDialog {
   QList<AudioItem *> audioItems_;
 
   bool isAddNum_ = true;
+  int downloadedCount_ = 0;
   int downloadFailedCount_ = 0;
   int taskCount_ = 0;
   int maxTaskCount_ = 1;

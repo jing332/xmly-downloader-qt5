@@ -3,41 +3,37 @@
 #include <QBoxLayout>
 
 DownloadTaskItemWidget::DownloadTaskItemWidget(const QString &fileName,
-                                               const QString &url,
                                                QWidget *parent)
     : QWidget(parent) {
-  QFont font;
-  font.setPointSize(9);
-  setFont(font);
-
   fileNameLabel_ = new QLabel(fileName, this);
-  urlLabel_ = new QLabel(url, this);
-  statusLabel_ = new QLabel("<font color='#0000FF'>正在等待...</font>", this);
+  statusLabel_ = new QLabel(this);
   statusLabel_->setStyleSheet("font-size: 10pt; color:green");
-  progressBar = new QProgressBar(this);
-  progressBar->setVisible(false);
-  progressBar->setFixedSize(width(), 4);
-  progressBar->setFormat("");
+
+  progressBar_ = new QProgressBar(this);
+  progressBar_->setVisible(false);
+  progressBar_->setFixedHeight(4);
+  progressBar_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  progressBar_->setTextVisible(false);
 
   fileNameLabel_->setStyleSheet("font: bold 10pt");
-  fileNameLabel_->setFixedHeight(18);
-  urlLabel_->setStyleSheet("font: 9pt; color: gray");
-  urlLabel_->setFixedHeight(18);
 
   auto vLayout = new QVBoxLayout();
   vLayout->setSpacing(5);
   vLayout->setMargin(5);
-  vLayout->addWidget(fileNameLabel_, 0, Qt::AlignLeft | Qt::AlignTop);
-  vLayout->addStrut(5);
-  vLayout->addWidget(urlLabel_, 0, Qt::AlignLeft);
-  vLayout->addWidget(progressBar, 2, Qt::AlignLeft | Qt::AlignBottom);
+  vLayout->addWidget(fileNameLabel_);
+  vLayout->addWidget(progressBar_);
 
   auto hLayout = new QHBoxLayout(this);
   hLayout->setSpacing(0);
   hLayout->setMargin(0);
   hLayout->addLayout(vLayout);
-  hLayout->addWidget(statusLabel_, 20, Qt::AlignRight);
-  hLayout->addSpacerItem(new QSpacerItem(10, 10, QSizePolicy::Fixed));
+  hLayout->addSpacerItem(new QSpacerItem(10, 0, QSizePolicy::Maximum));
+  hLayout->addWidget(statusLabel_);
+  hLayout->addSpacerItem(new QSpacerItem(5, 0, QSizePolicy::Maximum));
+}
+
+void DownloadTaskItemWidget::setProgressBarVisible(bool visible) {
+  progressBar_->setVisible(visible);
 }
 
 void DownloadTaskItemWidget::SetStatus(const QString &status) {
@@ -45,11 +41,11 @@ void DownloadTaskItemWidget::SetStatus(const QString &status) {
 }
 
 void DownloadTaskItemWidget::UpdateProgressBar(int value) {
-  progressBar->setValue(value);
+  progressBar_->setValue(value);
 }
 
 void DownloadTaskItemWidget::SetProgressBarVisible(bool visible) {
-  progressBar->setVisible(visible);
+  progressBar_->setVisible(visible);
 }
 
 QString DownloadTaskItemWidget::GetFileNameText() {

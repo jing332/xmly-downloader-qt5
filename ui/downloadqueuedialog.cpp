@@ -72,7 +72,9 @@ void DownloadQueueDialog::DownloadVipFile(AudioItem *ai) {
 
   connect(dlVipFileRun, &DownloadVipFileRunnable::StartGetInfo, this,
           [&](int trackID) {
-            GetDownloadTaskItemWidget(trackID)->SetStatus("获取下载地址...");
+            auto item = GetDownloadTaskItemWidget(trackID);
+            item->setProgressBarVisible(true);
+            item->SetStatus("获取下载地址...");
           });
 
   connect(dlVipFileRun, &DownloadVipFileRunnable::StartDownload, this,
@@ -135,11 +137,11 @@ void DownloadQueueDialog::StartDownload(QList<AudioItem *> &aiList,
 }
 
 /*添加下载中ItemWidget*/
-void DownloadQueueDialog::AddDownloadingItemWidget(int id, const QString &url,
+void DownloadQueueDialog::AddDownloadingItemWidget(int id,
                                                    const QString &fileName) {
-  auto itemWidget = new DownloadTaskItemWidget(fileName, url);
+  auto itemWidget = new DownloadTaskItemWidget(fileName);
   auto item = new QListWidgetItem(ui_->downloadingListWidget);
-  item->setSizeHint(QSize(0, 50));
+  item->setSizeHint(QSize(0, 45));
   item->setData(Qt::UserRole, QVariant::fromValue(itemWidget));
   ui_->downloadingListWidget->addItem(item);
   ui_->downloadingListWidget->setItemWidget(item, itemWidget);
@@ -199,8 +201,14 @@ void DownloadQueueDialog::OnDownloadFinished(int id, const QString &error) {
       ui_->downloadingListWidget->row(listItem));
   downloadingListWidgetItems_.remove(id);
 
+  int rowCount = ui_->downloadingListWidget->model()->rowCount();
+  ui_->tabWidget->setTabText(0, QStringLiteral("正在下载(%1)").arg(rowCount));
+
   if (error.isEmpty()) {
     qDebug() << QStringLiteral("download finished: {id: %1}").arg(id);
+    downloadedCount_++;
+    setWindowTitle(
+        QStringLiteral("下载管理 (已下载: %1)").arg(downloadedCount_));
   } else {
     qWarning() << QStringLiteral("download fail: {id: %1, reason: %2}")
                       .arg(id)
@@ -276,7 +284,7 @@ void DownloadQueueDialog::on_retryBtn_clicked() {
       auto variant = selectedItem->data(Qt::UserRole);
       auto ai = variant.value<AudioItem *>();
       selectedItems.append(ai);
-      AddDownloadingItemWidget(ai->id, ai->url, ai->title);
+      AddDownloadingItemWidget(ai->id, ai->title);
     }
 
     SetDownloadFailedCount(downloadFailedCount_ - selectedItems.size());

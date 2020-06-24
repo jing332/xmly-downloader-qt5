@@ -39,7 +39,7 @@
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>正在下载</string>
+       <string>正在下载(0)</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
