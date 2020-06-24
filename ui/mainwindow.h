@@ -21,9 +21,17 @@ class MainWindow : public QMainWindow {
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
+ protected:
+  void showEvent(QShowEvent *event) override;
+  void closeEvent(QCloseEvent *event) override;
+
  private:
   void SetStyleSheet(const QString &filePath);
   int GetIntWidth(int n);
+  void ReadConfig();
+
+ signals:
+  void AddAudioItem(AudioItem *item);
 
  private slots:
   void on_selectDirBtn_clicked();
@@ -48,9 +56,6 @@ class MainWindow : public QMainWindow {
 
   void on_themeComboBox_currentIndexChanged(int index);
 
- signals:
-  void AddAudioItem(AudioItem *item);
-
  private:
   Ui::MainWindow *ui_;
 
@@ -60,10 +65,10 @@ class MainWindow : public QMainWindow {
   QThreadPool *pool_;
 
   /*是否在文件名前添加序号*/
-  bool isAddNum = true;
+  bool isAddNum = false;
   /*专辑名称*/
   QString albumName_;
-  /*下载地址*/
+  /*下载路径*/
   QString downloadDir_;
   /*Cookie 非免费专辑必填*/
   QString cookie_;

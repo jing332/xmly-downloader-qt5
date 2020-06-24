@@ -208,7 +208,7 @@
         <property name="minimumSize">
          <size>
           <width>80</width>
-          <height>35</height>
+          <height>0</height>
          </size>
         </property>
         <property name="toolTip">
@@ -227,7 +227,7 @@
         <property name="minimumSize">
          <size>
           <width>80</width>
-          <height>35</height>
+          <height>0</height>
          </size>
         </property>
         <property name="toolTip">
@@ -271,7 +271,7 @@
         </property>
        </widget>
       </item>
-      <item alignment="Qt::AlignHCenter">
+      <item>
        <widget class="QPushButton" name="startDownloadBtn">
         <property name="enabled">
          <bool>false</bool>
@@ -284,12 +284,12 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>120</width>
-          <height>40</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
         <property name="text">
-         <string>下载选中音频</string>
+         <string>下载已选中</string>
         </property>
        </widget>
       </item>
@@ -299,8 +299,11 @@
          <string>在文件名
 前添加序号</string>
         </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
         <property name="checked">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="tristate">
          <bool>false</bool>

@@ -89,6 +89,21 @@ MainWindow::~MainWindow() {
   qDeleteAll(audioItems_);
 }
 
+bool firstShow = true;
+void MainWindow::showEvent(QShowEvent *) {
+  if (firstShow) {
+    ReadConfig();
+    firstShow = false;
+  }
+}
+
+void MainWindow::closeEvent(QCloseEvent *) {
+  Cgo::getInstance()->cgo_writeConfig(
+      ui_->idLineEdit->text().toInt(), ui_->maxTaskCountSpinBox->value(),
+      ui_->themeComboBox->currentIndex(), cookie_.toStdString().c_str(),
+      downloadDir_.toStdString().c_str());
+}
+
 /*读取文件并设置样式表*/
 void MainWindow::SetStyleSheet(const QString &filePath) {
   QFile f(filePath);
@@ -106,6 +121,29 @@ int MainWindow::GetIntWidth(int n) {
   }
 
   return count;
+}
+
+void MainWindow::ReadConfig() {
+  auto cfg = Cgo::getInstance()->cgo_readConfig();
+  if (cfg) {
+    cookie_ = cfg->cookie;
+    if (!cookie_.isEmpty()) {
+      ui_->cookieBtn->setText("已设置Cookie");
+    }
+
+    if (0 < cfg->albumID && 100000000 > cfg->albumID) {
+      ui_->idLineEdit->setText(QString::number(cfg->albumID));
+    }
+
+    if (0 <= cfg->theme && 3 >= cfg->theme) {
+      ui_->themeComboBox->setCurrentIndex(cfg->theme);
+    }
+
+    downloadDir_ = cfg->downloadDir;
+    ui_->downloadDirLineEdit->setText(downloadDir_);
+    ui_->maxTaskCountSpinBox->setValue(cfg->maxTaskCount);
+    delete cfg;
+  }
 }
 
 void MainWindow::Timeout() { ui_->parseBtn->setEnabled(true); }
@@ -159,8 +197,7 @@ void MainWindow::on_startDownloadBtn_clicked() {
     int row = index.row();
 
     downloadQueueDialog.AddDownloadingItemWidget(
-        audioItems_.at(row)->id, audioItems_.at(row)->url,
-        audioItems_.at(row)->title + suffixName_);
+        audioItems_.at(row)->id, audioItems_.at(row)->title + suffixName_);
 
     /*设置序号*/
     audioItems_.at(row)->number = QString("%1").arg(
@@ -326,17 +363,17 @@ void MainWindow::on_themeComboBox_currentIndexChanged(int index) {
    */
   switch (index) {
     case 1:  //淡蓝
-      SetStyleSheet(":/qss/lightblue.css");
+      SetStyleSheet(QStringLiteral(":/qss/lightblue.css"));
       break;
     case 2:  // PS黑
-      SetStyleSheet(":/qss/psblack.css");
+      SetStyleSheet(QStringLiteral(":/qss/psblack.css"));
       break;
     case 3:  //扁平白
-      SetStyleSheet(":/qss/flatwhite.css");
+      SetStyleSheet(QStringLiteral(":/qss/flatwhite.css"));
       break;
     case 0:  //默认
     default:
-      setStyleSheet("QWidget{font: 12pt 'Microsoft YaHei'}");
+      setStyleSheet(QStringLiteral("QWidget{font: 12pt 'Microsoft YaHei'}"));
       break;
   }
 }

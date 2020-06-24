@@ -6,3 +6,4 @@
 /cgoqt/.idea
 /.qmake.stash
 /cgoqt/*.log
+/cgoqt/config.json

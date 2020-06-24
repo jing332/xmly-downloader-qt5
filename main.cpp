@@ -2,7 +2,6 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QFile>
-#include <QTranslator>
 
 #include "appevent.h"
 #include "cgo.h"
@@ -64,7 +63,6 @@ extern "C" int start() {
   char **argv = 0;
 
   QApplication app(argc, argv);
-
   win = new MainWindow();
   win->show();
 

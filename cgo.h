@@ -69,6 +69,18 @@ struct UserInfo {
 };
 Q_DECLARE_METATYPE(UserInfo*)
 
+struct AppConfig {
+  int albumID;
+  int maxTaskCount;
+  int theme;
+  const char* cookie;
+  const char* downloadDir;
+  ~AppConfig() {
+    delete cookie;
+    delete downloadDir;
+  }
+};
+
 typedef AlbumInfo* (*CGO_GET_ALBUM_INFO)(int albumID);
 typedef DataError* (*CGO_GET_AUDIO_INFO)(int albumID, int page, int pageSize);
 typedef DataError* (*CGO_GET_VIP_AUDIO_INFO)(int albumID, const char* cookie);
@@ -77,7 +89,11 @@ typedef const char* (*CGO_DOWNLOAD_FILE)(const char* url, const char* filePath,
                                          int id);
 typedef DataError* (*CGO_GET_USER_INFO)(const char* cookie);
 
-typedef struct DataError* (*CGO_GET_FILE_LENGTH)(const char* url);
+typedef AppConfig* (*CGO_READ_CONFIG)();
+typedef void (*CGO_WRITE_CONFIG)(int albuID, int maxTaskCount, int theme,
+                                 const char* cookie, const char* downloadDir);
+
+// typedef struct DataError* (*CGO_GET_FILE_LENGTH)(const char* url);
 
 class Cgo {
  private:
@@ -93,7 +109,10 @@ class Cgo {
   CGO_DOWNLOAD_FILE cgo_downloadFile = nullptr;
   CGO_GET_VIP_AUDIO_INFO cgo_getVipAudioInfo = nullptr;
   CGO_GET_USER_INFO cgo_getUserInfo = nullptr;
-  CGO_GET_FILE_LENGTH cgo_getFileLength = nullptr;
+  CGO_READ_CONFIG cgo_readConfig = nullptr;
+  CGO_WRITE_CONFIG cgo_writeConfig = nullptr;
+
+  //  CGO_GET_FILE_LENGTH cgo_getFileLength = nullptr;
 };
 
 #endif  // CGO_H

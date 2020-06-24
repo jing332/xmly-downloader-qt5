@@ -59,6 +59,15 @@ import (
 		char* nickName;
 	} UserInfo;
 
+	typedef struct
+	{
+		int albumID;
+		int maxTaskCount;
+		int theme;
+		const char* cookie;
+		const char* downloadDir;
+	} AppConfig;
+
   	extern void init();
    	extern int start();
    	extern void drv_cgo_callback(void*, void*);
@@ -71,13 +80,18 @@ import (
 		char* _cgo_getVipAudioInfo = "cgo_getVipAudioInfo";
 		char* _cgo_downloadFile = "cgo_downloadFile";
 		char* _cgo_getUserInfo = "cgo_getUserInfo";
+		char* _cgo_readConfig = "cgo_readConfig";
+		char* _cgo_writeConfig = "cgo_writeConfig";
 		//char* _cgo_getFileLength = "cgo_getFileLength";
 
-		extern void* cgoGetAlbumInfo(int audiobookId);
-		extern DataError* cgoGetAudioInfo(int audiobookId, int page, int pageSize);
+		extern void* cgoGetAlbumInfo(int albumID);
+		extern DataError* cgoGetAudioInfo(int albumID, int page, int pageSize);
 		extern DataError* cgoGetVipAudioInfo(int trackID, char* cookie);
 		extern char* cgoDownloadFile(char* url, char* filePath, int id);
 		extern DataError* cgoGetUserInfo(char* cookie);
+
+		extern AppConfig* cgoReadConfig();
+		extern void cgoWriteConfig(int albumID,  int maxTaskCount, int theme, char* cookie, char* downloadDir);
 		//extern DataError* cgoGetFileLength(char* url);
 
 		drv_cgo_callback(_cgo_getAlbumInfo, &cgoGetAlbumInfo);
@@ -85,6 +99,8 @@ import (
 		drv_cgo_callback(_cgo_getVipAudioInfo, &cgoGetVipAudioInfo);
 		drv_cgo_callback(_cgo_downloadFile, &cgoDownloadFile);
 		drv_cgo_callback(_cgo_getUserInfo, &cgoGetUserInfo);
+		drv_cgo_callback(_cgo_readConfig, &cgoReadConfig);
+		drv_cgo_callback(_cgo_writeConfig, &cgoWriteConfig);
 		//drv_cgo_callback(_cgo_getFileLength, &cgoGetFileLength);
    	}
 
@@ -175,6 +191,18 @@ import (
 		p->uid = uid;
 		p->isVip = isVip;
 		p->nickName = nickName;
+
+		return p;
+	}
+
+	static inline AppConfig* newAppConfig(int albumID, int maxTaskCount, int theme, const char* cookie, const char* downloadDir)
+	{
+		AppConfig *p = (AppConfig*)malloc(sizeof(AppConfig));
+		p->albumID = albumID;
+		p->maxTaskCount = maxTaskCount;
+		p->theme = theme;
+		p->cookie = cookie;
+		p->downloadDir = downloadDir;
 
 		return p;
 	}
@@ -363,7 +391,53 @@ func cgoGetUserInfo(cookie *C.char) *C.DataError {
 	return C.newData(p)
 }
 
-var client = http.Client{}
+type AppConfig struct {
+	AlbumID      int    `json:"albumID"`
+	MaxTaskCount int    `json:"maxTaskCount"`
+	Theme        int    `json:"theme"`
+	Cookie       string `json:"cookie"`
+	DownloadDir  string `json:"downloadDir"`
+}
+
+//export cgoReadConfig
+func cgoReadConfig() *C.AppConfig {
+	f, err := os.Open("config.json")
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil
+	}
+
+	var cfg AppConfig
+	err = jsoniter.Unmarshal(data, &cfg)
+	if err != nil {
+		return nil
+	}
+
+	return C.newAppConfig(C.int(cfg.AlbumID), C.int(cfg.MaxTaskCount), C.int(cfg.Theme),
+		C.CString(cfg.Cookie), C.CString(cfg.DownloadDir))
+}
+
+//export cgoWriteConfig
+func cgoWriteConfig(albumID, maxTaskCount, theme C.int, cookie, downloadDir *C.char) {
+	f, err := os.OpenFile("config.json", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	appCfg := AppConfig{AlbumID: int(albumID), MaxTaskCount: int(maxTaskCount), Theme: int(theme),
+		Cookie: C.GoString(cookie), DownloadDir: C.GoString(downloadDir)}
+	json, err := jsoniter.Marshal(appCfg)
+	if err != nil {
+		return
+	}
+	f.Write(json)
+}
 
 ////export cgoGetFileLength
 //func cgoGetFileLength(cUrl *C.char) *C.DataError {
@@ -383,6 +457,8 @@ var client = http.Client{}
 //	cLong := C.long(resp.ContentLength)
 //	return C.newDataError(unsafe.Pointer(&cLong), C.CString(""))
 //}
+
+var client = http.Client{}
 
 func httpGet(url string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", url, nil)
