@@ -74,7 +74,7 @@ class MainWindow : public QMainWindow {
   QString cookie_;
 
   /*文件后缀名*/
-  QString suffixName_ = QStringLiteral(".m4a");
+  QString suffixName_ = QStringLiteral("m4a");
   /*特殊字符的正则表达式*/
   QRegularExpression fileNameReg_ = QRegularExpression("[\\:*?\"<>|]");
 };

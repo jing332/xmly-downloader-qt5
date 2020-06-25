@@ -4,17 +4,14 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QDesktopServices>
-#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMetaType>
 #include <QMouseEvent>
-#include <QPlainTextEdit>
 #include <QScrollBar>
 #include <QTextEdit>
-#include <QToolTip>
 
 #include "cookieinputdialog.h"
 #include "runnable/getalbuminforunnable.h"
@@ -237,10 +234,10 @@ void MainWindow::on_addNumCheckBox_clicked() {
 
 /*文件后缀名修改*/
 void MainWindow::on_mp3RadioBtn_clicked() {
-  suffixName_ = QStringLiteral(".mp3");
+  suffixName_ = QStringLiteral("mp3");
 }
 void MainWindow::on_m4aRadioBtn_clicked() {
-  suffixName_ = QStringLiteral(".m4a");
+  suffixName_ = QStringLiteral("m4a");
 }
 
 /*获取专辑信息完成*/
