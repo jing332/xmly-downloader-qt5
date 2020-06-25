@@ -76,6 +76,6 @@ class MainWindow : public QMainWindow {
   /*文件后缀名*/
   QString suffixName_ = QStringLiteral("m4a");
   /*特殊字符的正则表达式*/
-  QRegularExpression fileNameReg_ = QRegularExpression("[\\:*?\"<>|]");
+  QRegularExpression fileNameReg_ = QRegularExpression("[/\\:*?\"<>|]");
 };
 #endif  // MAINWINDOW_H
