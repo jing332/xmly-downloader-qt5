@@ -193,8 +193,8 @@ void MainWindow::on_startDownloadBtn_clicked() {
   for (auto &index : ui_->tableWidget->selectionModel()->selectedRows(0)) {
     int row = index.row();
 
-    downloadQueueDialog.AddDownloadingItemWidget(
-        audioItems_.at(row)->id, audioItems_.at(row)->title + suffixName_);
+    downloadQueueDialog.AddDownloadingItemWidget(audioItems_.at(row)->id,
+                                                 audioItems_.at(row)->title);
 
     /*设置序号*/
     audioItems_.at(row)->number = QString("%1").arg(

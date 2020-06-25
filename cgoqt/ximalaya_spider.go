@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	xmlydown "github.com/jing332/xmlydownloader"
 	jsoniter "github.com/json-iterator/go"
 	"io"
 	"io/ioutil"
@@ -12,7 +13,6 @@ import (
 	"regexp"
 	"runtime"
 	"unsafe"
-	xmlydown "ximalaya-spider/xmlydownloader"
 )
 
 /*
@@ -246,8 +246,8 @@ func cgoGetAlbumInfo(albumID C.int) unsafe.Pointer {
 }
 
 //export cgoGetAudioInfo
-func cgoGetAudioInfo(audiobookId, page, pageSize C.int) *C.DataError {
-	list, err := xmlydown.GetAudioInfo(int(audiobookId), int(page), int(pageSize))
+func cgoGetAudioInfo(albumID, page, pageSize C.int) *C.DataError {
+	list, err := xmlydown.GetAudioInfo(int(albumID), int(page), int(pageSize))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
@@ -276,6 +276,7 @@ func cgoGetVipAudioInfo(trackID C.int, cookie *C.char) *C.DataError {
 	return C.newData(C.newAudioItem(C.int(ai.TrackId), C.CString(ai.Title), C.CString(ai.URL)))
 }
 
+//DownloadProgress 追踪下载进度
 type DownloadProgress struct {
 	io.Reader
 	ContentLength, CurrentLength int64
@@ -345,40 +346,11 @@ func cgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 	return nil
 }
 
-type UserInfo struct {
-	Ret  int    `json:"ret"`
-	Msg  string `json:"msg"`
-	Data struct {
-		UID      int    `json:"uid"`
-		Nickname string `json:"nickname"`
-		IsVip    bool   `json:"isVip"`
-	} `json:"data"`
-}
-
 //export cgoGetUserInfo
 func cgoGetUserInfo(cookie *C.char) *C.DataError {
-	req, err := http.NewRequest("GET", "https://www.ximalaya.com/revision/main/getCurrentUser", nil)
+	ui, err := xmlydown.GetUserInfo(C.GoString(cookie))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
-	}
-
-	req.Header.Set("Cookie", C.GoString(cookie))
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
-	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4139.0 Safari/537.36 Edg/84.0.516.1")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return C.newDataError(nil, C.CString("请求失败:"+err.Error()))
-	}
-
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-
-	var ui UserInfo
-	err = jsoniter.Unmarshal(data, &ui)
-	if err != nil {
-		return C.newDataError(nil, C.CString("解析json失败:"+err.Error()))
 	}
 
 	isVip := 0
@@ -391,6 +363,7 @@ func cgoGetUserInfo(cookie *C.char) *C.DataError {
 	return C.newData(p)
 }
 
+//AppConfig 应用配置
 type AppConfig struct {
 	AlbumID      int    `json:"albumID"`
 	MaxTaskCount int    `json:"maxTaskCount"`
