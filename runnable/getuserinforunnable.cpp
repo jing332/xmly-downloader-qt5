@@ -5,7 +5,7 @@ GetUserInfoRunnable::GetUserInfoRunnable(const QString &cookie, QObject *parent)
 
 void GetUserInfoRunnable::run() {
   auto dataErr =
-      Cgo::getInstance()->cgo_getUserInfo(cookie_.toStdString().c_str());
+      CgoGetUserInfo(const_cast<char *>(cookie_.toStdString().c_str()));
   if (dataErr->error) {
     emit Error(QString(dataErr->error));
     delete dataErr;

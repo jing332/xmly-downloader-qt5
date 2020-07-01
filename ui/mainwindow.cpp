@@ -86,6 +86,7 @@ MainWindow::~MainWindow() {
   qDeleteAll(audioItems_);
 }
 
+/*先显示主程序再读取配置文件, 不然主题设置会出问题*/
 bool firstShow = true;
 void MainWindow::showEvent(QShowEvent *) {
   if (firstShow) {
@@ -95,10 +96,11 @@ void MainWindow::showEvent(QShowEvent *) {
 }
 
 void MainWindow::closeEvent(QCloseEvent *) {
-  Cgo::getInstance()->cgo_writeConfig(
-      ui_->idLineEdit->text().toInt(), ui_->maxTaskCountSpinBox->value(),
-      ui_->themeComboBox->currentIndex(), cookie_.toStdString().c_str(),
-      downloadDir_.toStdString().c_str());
+  CgoWriteConfig(ui_->idLineEdit->text().toInt(),
+                 ui_->maxTaskCountSpinBox->value(),
+                 ui_->themeComboBox->currentIndex(),
+                 const_cast<char *>(cookie_.toStdString().c_str()),
+                 const_cast<char *>(downloadDir_.toStdString().c_str()));
 }
 
 /*读取文件并设置样式表*/
@@ -120,31 +122,33 @@ int MainWindow::GetIntWidth(int n) {
   return count;
 }
 
+/*读取应用配置文件*/
 void MainWindow::ReadConfig() {
-  auto cfg = Cgo::getInstance()->cgo_readConfig();
-  if (cfg) {
-    cookie_ = cfg->cookie;
+  auto appCfg = CgoReadConfig();
+  if (appCfg) {
+    cookie_ = appCfg->cookie;
     if (!cookie_.isEmpty()) {
       ui_->cookieBtn->setText("已设置Cookie");
     }
 
-    if (0 < cfg->albumID && 100000000 > cfg->albumID) {
-      ui_->idLineEdit->setText(QString::number(cfg->albumID));
+    if (0 < appCfg->albumID && 100000000 > appCfg->albumID) {
+      ui_->idLineEdit->setText(QString::number(appCfg->albumID));
     }
 
-    if (0 <= cfg->theme && 3 >= cfg->theme) {
-      ui_->themeComboBox->setCurrentIndex(cfg->theme);
+    if (0 <= appCfg->theme && 3 >= appCfg->theme) {
+      ui_->themeComboBox->setCurrentIndex(appCfg->theme);
     }
 
-    downloadDir_ = cfg->downloadDir;
+    downloadDir_ = appCfg->downloadDir;
     ui_->downloadDirLineEdit->setText(downloadDir_);
-    ui_->maxTaskCountSpinBox->setValue(cfg->maxTaskCount);
-    delete cfg;
+    ui_->maxTaskCountSpinBox->setValue(appCfg->maxTaskCount);
+    delete appCfg;
   }
 }
 
 void MainWindow::Timeout() { ui_->parseBtn->setEnabled(true); }
 
+/*选择目录按钮的点击事件*/
 void MainWindow::on_selectDirBtn_clicked() {
   auto dir = QFileDialog::getExistingDirectory(this);
   if (!dir.isEmpty()) {
@@ -153,6 +157,7 @@ void MainWindow::on_selectDirBtn_clicked() {
   }
 }
 
+/*解析按钮的点击事件*/
 void MainWindow::on_parseBtn_clicked() {
   auto albumID = ui_->idLineEdit->text().toInt();
   if (0 >= albumID) {
@@ -169,10 +174,12 @@ void MainWindow::on_parseBtn_clicked() {
   ui_->parseBtn->setEnabled(false);
   ui_->statusbar->showMessage("获取专辑信息...", 2000);
 
-  auto getAlbumInfoRunnable = new GetAlbumInfoRunnable(albumID);
-  connect(getAlbumInfoRunnable, &GetAlbumInfoRunnable::Finished, this,
+  auto runnable = new GetAlbumInfoRunnable(albumID);
+  connect(runnable, &GetAlbumInfoRunnable::Finished, this,
           &MainWindow::OnGetAlbumInfoFinished);
-  pool_->start(getAlbumInfoRunnable);
+  connect(runnable, &GetAlbumInfoRunnable::Error, this,
+          &MainWindow::OnGetAlbumInfoError);
+  pool_->start(runnable);
 }
 
 void MainWindow::on_selectAllBtn_clicked() {
@@ -185,6 +192,7 @@ void MainWindow::on_unselectBtn_clicked() {
   ui_->selectAllBtn->setFocus();
 }
 
+/*开始下载按钮的点击事件*/
 void MainWindow::on_startDownloadBtn_clicked() {
   qInfo() << "download dir: " << downloadDir_ + "/" + albumName_;
 
@@ -198,7 +206,7 @@ void MainWindow::on_startDownloadBtn_clicked() {
 
     /*设置序号*/
     audioItems_.at(row)->number = QString("%1").arg(
-        row + 1, GetIntWidth(audioItems_.size()), 10, QLatin1Char('0'));
+        row + 1, GetIntWidth(audioItems_.size()) + 1, 10, QLatin1Char('0'));
 
     selectedItems.append(audioItems_.at(row));
   }
@@ -240,40 +248,39 @@ void MainWindow::on_m4aRadioBtn_clicked() {
   suffixName_ = QStringLiteral("m4a");
 }
 
-/*获取专辑信息完成*/
+/*获取专辑信息成功*/
 void MainWindow::OnGetAlbumInfoFinished(AlbumInfo *ai, int albumID) {
-  QString error(ai->error);
-  if (error.isEmpty()) {
-    auto text =
-        QStringLiteral(
-            "小说名称: <a href='%3'><span style='text-decoration: underline; "
-            "color:black;'>%1</span></a>\t音频数量: <b>%2</b>")
-            .arg(ai->title)
-            .arg(ai->audioCount)
-            .arg(QStringLiteral("https://www.ximalaya.com/youshengshu/")
-                     .append(QString::number(albumID)));
-    ui_->titleLabel->setText(text);
-    albumName_ = QString(ai->title).replace(fileNameReg_, " ");
+  auto text =
+      QStringLiteral(
+          "小说名称: <a href='%3'><span style='text-decoration: underline; "
+          "color:black;'>%1</span></a>\t音频数量: <b>%2</b>")
+          .arg(ai->title)
+          .arg(ai->audioCount)
+          .arg(QStringLiteral("https://www.ximalaya.com/youshengshu/")
+                   .append(QString::number(albumID)));
+  ui_->titleLabel->setText(text);
+  albumName_ = QString(ai->title).replace(fileNameReg_, " ");
 
-    int number = ai->audioCount / 100;
-    int j = ai->audioCount % 100;
-    if (j > 0) number++;
-    for (int i = 1; i < number + 1; i++) {
-      auto runnable = new GetAudioInfoRunnable(albumID, i, 100);
-      connect(runnable, &GetAudioInfoRunnable::Finished, this,
-              &MainWindow::OnGetAudioInfoFinished);
-      connect(runnable, &GetAudioInfoRunnable::Error, this,
-              &MainWindow::OnGetAudioInfoError);
-      pool_->start(runnable);
-    }
-  } else {
-    qWarning() << "get album info fail:" << error;
-    ui_->statusbar->showMessage(
-        QStringLiteral("获取小说信息失败: ").append(error));
-    ui_->parseBtn->setEnabled(true);
+  int number = ai->audioCount / 100;
+  int j = ai->audioCount % 100;
+  if (j > 0) number++;
+  for (int i = 1; i < number + 1; i++) {
+    auto runnable = new GetAudioInfoRunnable(albumID, i, 100);
+    connect(runnable, &GetAudioInfoRunnable::Finished, this,
+            &MainWindow::OnGetAudioInfoFinished);
+    connect(runnable, &GetAudioInfoRunnable::Error, this,
+            &MainWindow::OnGetAudioInfoError);
+    pool_->start(runnable);
   }
 
   delete ai;
+}
+
+/*获取专辑信息失败*/
+void MainWindow::OnGetAlbumInfoError(const QString &err) {
+  qWarning() << "get album info fail:" << err;
+  ui_->statusbar->showMessage(QStringLiteral("获取专辑信息失败: ").append(err));
+  ui_->parseBtn->setEnabled(true);
 }
 
 /*获取音频信息完成*/
@@ -304,7 +311,7 @@ void MainWindow::OnGetAudioInfoFinished(
 void MainWindow::OnGetAudioInfoError(const QString reason, int albumID,
                                      int page, int pageSize) {
   auto err = QStringLiteral(
-                 "get album info fail: {reason: %1, audiobookId: %2, "
+                 "get audio info failed: {reason: %1, audiobookId: %2, "
                  "page: %3, pageSize: %4}")
                  .arg(reason)
                  .arg(albumID, page, pageSize);
@@ -354,8 +361,9 @@ void MainWindow::on_cookieBtn_clicked() {
   }
 }
 
+/*切换主题*/
 void MainWindow::on_themeComboBox_currentIndexChanged(int index) {
-  /*主题文件来自
+  /*样式表来自
    * https://github.com/feiyangqingyun/QWidgetDemo/tree/master/styledemo/other/qss
    */
   switch (index) {

@@ -1,7 +1,5 @@
 #include "getvipaudioinforunnable.h"
 
-#include "cgo.h"
-
 GetVipAudioInfoRunnable::GetVipAudioInfoRunnable(int trackID,
                                                  const QString &cookie,
                                                  const QString &filePath)
@@ -9,8 +7,8 @@ GetVipAudioInfoRunnable::GetVipAudioInfoRunnable(int trackID,
 
 void GetVipAudioInfoRunnable::run() {
   emit Start(trackID_);
-  auto dataErr = Cgo::getInstance()->cgo_getVipAudioInfo(
-      trackID_, cookie_.toStdString().c_str());
+  auto dataErr = CgoGetVipAudioInfo(
+      trackID_, const_cast<char *>(cookie_.toStdString().c_str()));
 
   if (dataErr->error) {
     emit Error(trackID_, QString(dataErr->error));
@@ -19,7 +17,13 @@ void GetVipAudioInfoRunnable::run() {
   }
 
   auto cgoAi = static_cast<CgoAudioItem *>(dataErr->data);
-  AudioItem *ai = new AudioItem();
-  emit Finished(trackID_, ai->fromCgo(cgoAi));
+  auto ai = new AudioItem();
+  ai->id = cgoAi->id;
+  ai->url = cgoAi->url;
+  ai->title = cgoAi->title;
+  ai->number = cgoAi->number;
+
+  emit Finished(trackID_, ai);
   delete cgoAi;
+  delete dataErr;
 }

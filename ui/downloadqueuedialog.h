@@ -5,8 +5,9 @@
 #include <QMap>
 #include <QThreadPool>
 
-#include "cgo.h"
+#include "cgoqt/cgo.h"
 #include "downloadtaskitemwidget.h"
+#include "type.h"
 #include "ui_downloadqueuedialog.h"
 
 namespace Ui {
@@ -44,7 +45,7 @@ class DownloadQueueDialog : public QDialog {
  private slots:
   void OnDownloadFinished(int id, const QString &error);
   void OnDownloadStart(int id);
-  void OnUpdateFileLength(int id, long contentLength, long currentLength);
+  void OnUpdateFileLength(int id, long *contentLength, long *currentLength);
 
   void on_retryBtn_clicked();
   void on_selectAllBtn_clicked();

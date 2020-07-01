@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QRunnable>
 
-#include "cgo.h"
+#include "cgoqt/xmlydownloader.h"
 
 class GetUserInfoRunnable : public QObject, public QRunnable {
   Q_OBJECT

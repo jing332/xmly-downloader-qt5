@@ -2,10 +2,11 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QFile>
+#include <QMetaType>
 
 #include "appevent.h"
-#include "cgo.h"
-#include "ui/downloadqueuedialog.h"
+#include "cgoqt/cgo.h"
+#include "cgoqt/xmlydownloader.h"
 #include "ui/mainwindow.h"
 
 //自定义消息处理函数
@@ -52,29 +53,22 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context,
   outputStream.flush();
 }
 
+void OnUpdateFileLength(int id, long *contentLength, long *currentLength) {
+  emit AppEvent::getInstance()->UpdateFileLength(id, contentLength,
+                                                 currentLength);
+}
+
 MainWindow *win;
+int main(int argc, char *argv[]) {
+#ifdef QT_DEBUG
+  qInstallMessageHandler(myMessageOutput);
+#endif
 
-extern "C" void init() { qInstallMessageHandler(myMessageOutput); }
+  CgoRegisterCallback(OnUpdateFileLength);
 
-// 开始运行 (在Go内调用)
-extern "C" int start() {
-  qInfo() << "Start Qt-GUI";
-  int argc = 0;
-  char **argv = 0;
-
-  QApplication app(argc, argv);
+  QApplication a(argc, argv);
   win = new MainWindow();
   win->show();
 
-  return app.exec();
-}
-
-extern "C" void drv_cgo_callback(char *funcName, void *funcPtr) {
-  Cgo::getInstance()->setCgo(funcName, funcPtr);
-}
-
-extern "C" void updateFileLength(int id, long *contentLength,
-                                 long *currentLength) {
-  emit AppEvent::getInstance()->UpdateFileLength(id, *contentLength,
-                                                 *currentLength);
+  return a.exec();
 }

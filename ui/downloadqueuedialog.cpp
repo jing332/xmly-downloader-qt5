@@ -5,7 +5,6 @@
 #include <QMessageBox>
 
 #include "appevent.h"
-#include "cgo.h"
 #include "runnable/downloadrunnable.h"
 #include "runnable/downloadvipfilerunnable.h"
 #include "ui/mainwindow.h"
@@ -142,6 +141,7 @@ void DownloadQueueDialog::AddDownloadingItemWidget(int id,
   auto itemWidget = new DownloadTaskItemWidget(fileName);
   auto item = new QListWidgetItem(ui_->downloadingListWidget);
   item->setSizeHint(QSize(0, 45));
+  item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
   item->setData(Qt::UserRole, QVariant::fromValue(itemWidget));
   ui_->downloadingListWidget->addItem(item);
   ui_->downloadingListWidget->setItemWidget(item, itemWidget);
@@ -249,17 +249,18 @@ void DownloadQueueDialog::OnDownloadStart(int id) {
   itemWidget->SetProgressBarVisible(true);
 }
 
-void DownloadQueueDialog::OnUpdateFileLength(int id, long contentLength,
-                                             long currentLength) {
+void DownloadQueueDialog::OnUpdateFileLength(int id, long *contentLength,
+                                             long *currentLength) {
   auto &listItem = downloadingListWidgetItems_[id];
   auto variant = listItem->data(Qt::UserRole);
   auto itemWidget = variant.value<DownloadTaskItemWidget *>();
 
-  itemWidget->UpdateProgressBar(float(currentLength) / contentLength * 100.0);
+  itemWidget->UpdateProgressBar(float(*currentLength) / *contentLength * 100.0);
   itemWidget->SetStatus(
       QStringLiteral("(%1MB/%2MB)") /*1024k * 1024k = 1048576k = 1MB*/
-          .arg(QString::number(double(currentLength) / double(1048576), 'f', 2))
-          .arg(QString::number(double(contentLength) / double(1048576), 'f',
+          .arg(
+              QString::number(double(*currentLength) / double(1048576), 'f', 2))
+          .arg(QString::number(double(*contentLength) / double(1048576), 'f',
                                2)));
 }
 

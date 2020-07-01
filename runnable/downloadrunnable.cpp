@@ -5,26 +5,23 @@
 #include <QRandomGenerator>
 #include <QThread>
 
-#include "cgo.h"
+#include "cgoqt/xmlydownloader.h"
 
 DownloadRunnable::DownloadRunnable(int id, const QString &url,
-                                   const QString &filePath) {
-  this->id_ = id;
-  this->url_ = url;
-  this->filePath_ = filePath;
-}
+                                   const QString &filePath)
+    : id_(id), url_(url), filePath_(filePath) {}
 
 void DownloadRunnable::run() {
   emit Start(id_);
-  auto *cstr = Cgo::getInstance()->cgo_downloadFile(
-      url_.toStdString().c_str(), filePath_.toStdString().c_str(), id_);
+  auto *err =
+      CgoDownloadFile(const_cast<char *>(url_.toStdString().c_str()),
+                      const_cast<char *>(filePath_.toStdString().c_str()), id_);
 
-  if (cstr) {
-    QString error(cstr);
-    qWarning() << QStringLiteral("download fail: {url: %1, error: %2}")
-                      .arg(url_, error);
-    emit Finished(id_, error);
-    delete cstr;
+  if (err) {
+    qWarning()
+        << QStringLiteral("download fail: {url: %1, error: %2}").arg(url_, err);
+    emit Finished(id_, QString(err));
+    delete err;
   } else
     emit Finished(id_, QStringLiteral(""));
 }

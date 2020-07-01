@@ -4,7 +4,8 @@
 #include <QObject>
 #include <QRunnable>
 
-#include "cgo.h"
+#include "cgoqt/xmlydownloader.h"
+#include "type.h"
 
 class DownloadVipFileRunnable : public QObject, public QRunnable {
   Q_OBJECT

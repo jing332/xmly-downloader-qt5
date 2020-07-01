@@ -5,8 +5,9 @@
 #include <QThreadPool>
 #include <QTimer>
 
-#include "cgo.h"
+#include "cgoqt/xmlydownloader.h"
 #include "downloadqueuedialog.h"
+#include "type.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -47,6 +48,8 @@ class MainWindow : public QMainWindow {
   void on_m4aRadioBtn_clicked();
 
   void OnGetAlbumInfoFinished(AlbumInfo *info, int audiobookId);
+  void OnGetAlbumInfoError(const QString &err);
+
   void OnGetAudioInfoFinished(const QList<AudioItem *> &audioItemList);
   void OnGetAudioInfoError(const QString reason, int audiobookId, int page,
                            int pageSize);

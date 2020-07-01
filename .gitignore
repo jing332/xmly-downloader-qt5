@@ -7,3 +7,5 @@
 /.qmake.stash
 /cgoqt/*.log
 /cgoqt/config.json
+/cgoqt/xmlydownloader.h
+/cgoqt/xmlydownloader.a

@@ -16,7 +16,7 @@ class AppEvent : public QObject {
   AppEvent() {}
 
  signals:
-  void UpdateFileLength(int id, long contentLength, long currentLength);
+  void UpdateFileLength(int id, long *contentLength, long *currentLength);
 };
 
 #endif  // APPEVENT_H

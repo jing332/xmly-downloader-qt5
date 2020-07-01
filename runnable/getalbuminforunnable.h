@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QRunnable>
 
-#include "cgo.h"
+#include "cgoqt/xmlydownloader.h"
 
 class GetAlbumInfoRunnable : public QObject, public QRunnable {
   Q_OBJECT
@@ -14,6 +14,7 @@ class GetAlbumInfoRunnable : public QObject, public QRunnable {
 
  signals:
   void Finished(AlbumInfo *info, int audiobookId);
+  void Error(const QString &err);
 
  private:
   int albumID_;

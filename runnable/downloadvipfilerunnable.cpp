@@ -1,5 +1,7 @@
 #include "downloadvipfilerunnable.h"
 
+#include "cgoqt/xmlydownloader.h"
+
 DownloadVipFileRunnable::DownloadVipFileRunnable(int trackID,
                                                  const QString &cookie,
                                                  const QString &filePath,
@@ -9,8 +11,8 @@ DownloadVipFileRunnable::DownloadVipFileRunnable(int trackID,
 void DownloadVipFileRunnable::run() {
   /*获取Vip音频信息*/
   emit StartGetInfo(trackID_);
-  auto dataErr = Cgo::getInstance()->cgo_getVipAudioInfo(
-      trackID_, cookie_.toStdString().c_str());
+  auto dataErr = CgoGetVipAudioInfo(
+      trackID_, const_cast<char *>(cookie_.toStdString().c_str()));
   if (dataErr->error) {
     emit GetInfoError(trackID_, ai_, dataErr->error);
     return;
@@ -19,8 +21,9 @@ void DownloadVipFileRunnable::run() {
   emit StartDownload(trackID_, ai_);
 
   /*开始下载文件*/
-  auto *cstr = Cgo::getInstance()->cgo_downloadFile(
-      tmpAi->url, filePath_.toStdString().c_str(), tmpAi->id);
+  auto *cstr = CgoDownloadFile(
+      const_cast<char *>(tmpAi->url),
+      const_cast<char *>(filePath_.toStdString().c_str()), tmpAi->id);
 
   if (cstr) {
     emit DownloadError(trackID_, ai_, QString(cstr));
