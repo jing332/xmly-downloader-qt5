@@ -59,4 +59,4 @@ RESOURCES += \
   res/xmly-downloader-qt5.qrc \
   res/qss.qrc
 
-LIBS += -L$$PWD/cgoqt -lxmlydownloader
+LIBS += -L$$PWD/cgoqt $$PWD/cgoqt/xmlydownloader.a
