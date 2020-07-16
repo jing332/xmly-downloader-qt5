@@ -11,7 +11,7 @@ CookieInputDialog::CookieInputDialog(const QString &cookie, QWidget *parent)
   ui_->setupUi(this);
   setWindowFlag(Qt::WindowContextHelpButtonHint, false);
 
-  ui_->textEdit->setText(cookie_);
+  ui_->plainTextEdit->setPlainText(cookie_);
 }
 
 CookieInputDialog::~CookieInputDialog() { delete ui_; }
@@ -23,7 +23,7 @@ void CookieInputDialog::on_checkBtn_clicked() {
   ui_->okBtn->setEnabled(false);
   ui_->checkBtn->setEnabled(false);
 
-  auto runnable = new GetUserInfoRunnable(ui_->textEdit->toPlainText());
+  auto runnable = new GetUserInfoRunnable(ui_->plainTextEdit->toPlainText());
   connect(runnable, &GetUserInfoRunnable::Finisehd, this,
           [&](UserInfo *userInfo) {
             if (200 == userInfo->ret) {
@@ -55,12 +55,12 @@ void CookieInputDialog::on_checkBtn_clicked() {
 }
 
 void CookieInputDialog::on_okBtn_clicked() {
-  cookie_ = ui_->textEdit->toPlainText();
+  cookie_ = ui_->plainTextEdit->toPlainText();
   emit accept();
 }
 
-void CookieInputDialog::on_textEdit_textChanged() {
-  if (ui_->textEdit->toPlainText().contains("1&_token=")) {
+void CookieInputDialog::on_plainTextEdit_textChanged() {
+  if (ui_->plainTextEdit->toPlainText().contains("1&_token=")) {
     ui_->checkBtn->setEnabled(true);
   } else {
     ui_->checkBtn->setDisabled(true);

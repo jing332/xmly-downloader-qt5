@@ -19,7 +19,7 @@ class CookieInputDialog : public QDialog {
  private slots:
   void on_checkBtn_clicked();
   void on_okBtn_clicked();
-  void on_textEdit_textChanged();
+  void on_plainTextEdit_textChanged();
 
  private:
   Ui::CookieInputDialog *ui_;
