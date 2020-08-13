@@ -1,6 +1,6 @@
 #include "downloadvipfilerunnable.h"
 
-#include "cgoqt/xmlydownloader.h"
+#include "xmlydownloader.h"
 
 DownloadVipFileRunnable::DownloadVipFileRunnable(int trackID,
                                                  const QString &cookie,

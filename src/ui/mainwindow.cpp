@@ -14,8 +14,8 @@
 #include <QTextEdit>
 
 #include "cookieinputdialog.h"
-#include "runnable/getalbuminforunnable.h"
-#include "runnable/getaudioinforunnable.h"
+#include "runnables/getalbuminforunnable.h"
+#include "runnables/getaudioinforunnable.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)

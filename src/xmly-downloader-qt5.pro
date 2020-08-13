@@ -6,6 +6,13 @@ TARGET = xmly-downloader-qt5
 TEMPLATE = app
 CONFIG += c++11
 
+LIBS += $$PWD/cgoqt/xmlydownloader.a
+macx {
+    LIBS += -framework Security
+}
+
+INCLUDEPATH += $$PWD/include $$PWD/cgoqt
+
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -19,27 +26,26 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    runnable/downloadrunnable.cpp \
-    runnable/downloadvipfilerunnable.cpp \
-    runnable/getalbuminforunnable.cpp \
-    runnable/getaudioinforunnable.cpp \
-    runnable/getuserinforunnable.cpp \
-    runnable/getvipaudioinforunnable.cpp \
+    runnables/downloadrunnable.cpp \
+    runnables/downloadvipfilerunnable.cpp \
+    runnables/getalbuminforunnable.cpp \
+    runnables/getaudioinforunnable.cpp \
+    runnables/getuserinforunnable.cpp \
+    runnables/getvipaudioinforunnable.cpp \
     ui/cookieinputdialog.cpp \
     ui/downloadqueuedialog.cpp \
     ui/downloadtaskitemwidget.cpp \
     ui/mainwindow.cpp
 
 HEADERS += \
-  appevent.h \
-  main.h \
-  runnable/downloadrunnable.h \
-  runnable/downloadvipfilerunnable.h \
-  runnable/getalbuminforunnable.h \
-  runnable/getaudioinforunnable.h \
-  runnable/getuserinforunnable.h \
-  runnable/getvipaudioinforunnable.h \
   type.h \
+  appevent.h \
+  runnables/downloadrunnable.h \
+  runnables/downloadvipfilerunnable.h \
+  runnables/getalbuminforunnable.h \
+  runnables/getaudioinforunnable.h \
+  runnables/getuserinforunnable.h \
+  runnables/getvipaudioinforunnable.h \
   ui/cookieinputdialog.h \
   ui/downloadqueuedialog.h \
   ui/downloadtaskitemwidget.h \
@@ -56,7 +62,8 @@ FORMS += \
   ui/mainwindow.ui
 
 RESOURCES += \
-  res/xmly-downloader-qt5.qrc \
-  res/qss.qrc
+  resouces/qss.qrc \
+  resouces/xmly-downloader-qt5.qrc
 
-LIBS += -L$$PWD/cgoqt $$PWD/cgoqt/xmlydownloader.a
+DISTFILES += \
+  resouces/ximalaya.ico

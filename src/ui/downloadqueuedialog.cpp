@@ -5,8 +5,8 @@
 #include <QMessageBox>
 
 #include "appevent.h"
-#include "runnable/downloadrunnable.h"
-#include "runnable/downloadvipfilerunnable.h"
+#include "runnables/downloadrunnable.h"
+#include "runnables/downloadvipfilerunnable.h"
 #include "ui/mainwindow.h"
 
 DownloadQueueDialog::DownloadQueueDialog(const QString &cookie, QWidget *parent)

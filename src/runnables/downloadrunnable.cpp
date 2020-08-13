@@ -5,7 +5,7 @@
 #include <QRandomGenerator>
 #include <QThread>
 
-#include "cgoqt/xmlydownloader.h"
+#include "xmlydownloader.h"
 
 DownloadRunnable::DownloadRunnable(int id, const QString &url,
                                    const QString &filePath)

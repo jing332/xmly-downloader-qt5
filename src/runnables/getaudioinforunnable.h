@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QRunnable>
 
-#include "cgoqt/xmlydownloader.h"
+#include "xmlydownloader.h"
 #include "type.h"
 
 class GetAudioInfoRunnable : public QObject, public QRunnable {

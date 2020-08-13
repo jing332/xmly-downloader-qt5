@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QThreadPool>
 
-#include "runnable/getuserinforunnable.h"
+#include "runnables/getuserinforunnable.h"
 #include "ui_cookieinputdialog.h"
 
 CookieInputDialog::CookieInputDialog(const QString &cookie, QWidget *parent)

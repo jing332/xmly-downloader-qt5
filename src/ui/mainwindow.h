@@ -5,7 +5,7 @@
 #include <QThreadPool>
 #include <QTimer>
 
-#include "cgoqt/xmlydownloader.h"
+#include "xmlydownloader.h"
 #include "downloadqueuedialog.h"
 #include "type.h"
 

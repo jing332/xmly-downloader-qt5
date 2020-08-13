@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QRunnable>
 
-#include "cgoqt/xmlydownloader.h"
+#include "xmlydownloader.h"
 
 class GetAlbumInfoRunnable : public QObject, public QRunnable {
   Q_OBJECT
