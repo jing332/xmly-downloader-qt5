@@ -62,8 +62,8 @@ FORMS += \
   ui/mainwindow.ui
 
 RESOURCES += \
-  resouces/qss.qrc \
-  resouces/xmly-downloader-qt5.qrc
+  resources/qss.qrc \
+  resources/xmly-downloader-qt5.qrc
 
 DISTFILES += \
-  resouces/ximalaya.ico
+  resources/ximalaya.ico
