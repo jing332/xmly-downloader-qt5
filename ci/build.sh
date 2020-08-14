@@ -1,9 +1,7 @@
 #!/bin/bash
 
 export MAKE="make"
-if [ "Windows_NT" = "$OS" ];then export MAKE="mingw32-make"; fi
-
-export GOARCH=386
+if [ "Windows_NT" = "$OS" ];then export MAKE="mingw32-make" && export GOARCH=386; fi
 export CGO_ENABLED=1
 
 cd ./src/cgoqt
