@@ -14,12 +14,13 @@ void OnUpdateFileLength(int id, long *contentLength, long *currentLength) {
                                                  currentLength);
 }
 
-MainWindow *win;
 int main(int argc, char *argv[]) {
   CgoRegisterCallback(OnUpdateFileLength);
+
+  QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QApplication a(argc, argv);
-  win = new MainWindow();
-  win->show();
+  MainWindow mw;
+  mw.show();
 
   return a.exec();
 }
