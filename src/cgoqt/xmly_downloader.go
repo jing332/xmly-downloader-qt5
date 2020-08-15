@@ -206,7 +206,7 @@ func CgoReadConfig() *C.AppConfig {
 func CgoWriteConfig(albumID, maxTaskCount, theme C.int, cookie, downloadDir *C.char) {
 	f, err := os.OpenFile("config.json", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 	defer f.Close()
 
