@@ -1,4 +1,8 @@
-# xmly-downloader-qt5
+<p align="center">
+<img src="http://blog.xmcdn.com/wp-content/uploads/2014/04/%E8%A7%84%E8%8C%831.png">
+</p>
+
+<h1 align="center">- 喜马拉雅FM下载器 GUI -</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/support-Windows-blue?logo=Windows">
