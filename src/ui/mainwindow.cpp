@@ -19,7 +19,9 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui_(new Ui::MainWindow) {
+    : QMainWindow(parent),
+      ui_(new Ui::MainWindow),
+      appSettings_(new AppSettings(this)) {
   ui_->setupUi(this);
 
   qRegisterMetaType<QList<AudioItem *>>("QList<AudioItem*>");
@@ -29,8 +31,11 @@ MainWindow::MainWindow(QWidget *parent)
   pool_ = new QThreadPool(this);
   pool_->setMaxThreadCount(1);
 
-  downloadDir_ = qApp->applicationDirPath().append(QStringLiteral("/download"));
-  ui_->downloadDirLineEdit->setText(downloadDir_);
+  if (appSettings_->downloadDir().isEmpty()) {
+    appSettings_->setDownloadDir(
+        qApp->applicationDirPath().append(QStringLiteral("/download")));
+  }
+  ui_->downloadDirLineEdit->setText(appSettings_->downloadDir());
 
   connect(timer_, &QTimer::timeout, this, &MainWindow::Timeout);
   connect(ui_->tableWidget->selectionModel(),
@@ -83,24 +88,16 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
   delete ui_;
-  qDeleteAll(audioItems_);
+  qDeleteAll(audioList_);
 }
 
 /*先显示主程序再读取配置文件, 不然主题设置会出问题*/
 bool firstShow = true;
 void MainWindow::showEvent(QShowEvent *) {
   if (firstShow) {
-    ReadConfig();
+    ApplySettings();
     firstShow = false;
   }
-}
-
-void MainWindow::closeEvent(QCloseEvent *) {
-  CgoWriteConfig(ui_->idLineEdit->text().toInt(),
-                 ui_->maxTaskCountSpinBox->value(),
-                 ui_->themeComboBox->currentIndex(),
-                 const_cast<char *>(cookie_.toStdString().c_str()),
-                 const_cast<char *>(downloadDir_.toStdString().c_str()));
 }
 
 /*读取文件并设置样式表*/
@@ -123,27 +120,22 @@ int MainWindow::GetIntWidth(int n) {
 }
 
 /*读取应用配置文件*/
-void MainWindow::ReadConfig() {
-  auto appCfg = CgoReadConfig();
-  if (appCfg) {
-    cookie_ = appCfg->cookie;
-    if (!cookie_.isEmpty()) {
-      ui_->cookieBtn->setText("已设置Cookie");
-    }
-
-    if (0 < appCfg->albumID && 100000000 > appCfg->albumID) {
-      ui_->idLineEdit->setText(QString::number(appCfg->albumID));
-    }
-
-    if (0 <= appCfg->theme && 3 >= appCfg->theme) {
-      ui_->themeComboBox->setCurrentIndex(appCfg->theme);
-    }
-
-    downloadDir_ = appCfg->downloadDir;
-    ui_->downloadDirLineEdit->setText(downloadDir_);
-    ui_->maxTaskCountSpinBox->setValue(appCfg->maxTaskCount);
-    delete appCfg;
+void MainWindow::ApplySettings() {
+  if (!appSettings_->cookie().isEmpty()) {
+    ui_->cookieBtn->setText("已设置Cookie");
   }
+
+  int albumID = appSettings_->albumID();
+  if (0 < albumID && 100000000 > albumID) {
+    ui_->idLineEdit->setText(QString::number(albumID));
+  }
+
+  int theme = appSettings_->theme();
+  if (0 <= theme && 3 >= theme) {
+    ui_->themeComboBox->setCurrentIndex(theme);
+  }
+
+  ui_->downloadDirLineEdit->setText(appSettings_->downloadDir());
 }
 
 void MainWindow::Timeout() { ui_->parseBtn->setEnabled(true); }
@@ -152,8 +144,8 @@ void MainWindow::Timeout() { ui_->parseBtn->setEnabled(true); }
 void MainWindow::on_selectDirBtn_clicked() {
   auto dir = QFileDialog::getExistingDirectory(this);
   if (!dir.isEmpty()) {
-    downloadDir_ = dir;
-    ui_->downloadDirLineEdit->setText(downloadDir_);
+    appSettings_->setDownloadDir(dir);
+    ui_->downloadDirLineEdit->setText(dir);
   }
 }
 
@@ -166,8 +158,10 @@ void MainWindow::on_parseBtn_clicked() {
     return;
   }
 
-  qDeleteAll(audioItems_);
-  audioItems_.clear();
+  appSettings_->setAlbumID(albumID);
+
+  qDeleteAll(audioList_);
+  audioList_.clear();
   ui_->tableWidget->clearContents();
   ui_->tableWidget->setRowCount(0);
 
@@ -194,27 +188,25 @@ void MainWindow::on_unselectBtn_clicked() {
 
 /*开始下载按钮的点击事件*/
 void MainWindow::on_startDownloadBtn_clicked() {
-  qInfo() << "download dir: " << downloadDir_ + "/" + albumName_;
-
-  DownloadQueueDialog downloadQueueDialog(cookie_, this);
+  DownloadQueueDialog downloadQueueDialog(appSettings_->cookie(), this);
   QList<AudioItem *> selectedItems;
   for (auto &index : ui_->tableWidget->selectionModel()->selectedRows(0)) {
     int row = index.row();
 
-    downloadQueueDialog.AddDownloadingItemWidget(audioItems_.at(row)->id,
-                                                 audioItems_.at(row)->title);
+    downloadQueueDialog.AddDownloadingItemWidget(audioList_.at(row)->id,
+                                                 audioList_.at(row)->title);
 
     /*设置序号*/
-    audioItems_.at(row)->number = QString("%1").arg(
-        row + 1, GetIntWidth(audioItems_.size()) + 1, 10, QLatin1Char('0'));
+    audioList_.at(row)->number = QString("%1").arg(
+        row + 1, GetIntWidth(audioList_.size()) + 1, 10, QLatin1Char('0'));
 
-    selectedItems.append(audioItems_.at(row));
+    selectedItems.append(audioList_.at(row));
   }
 
   /*添加任务到下载队列*/
   downloadQueueDialog.StartDownload(
       selectedItems, ui_->maxTaskCountSpinBox->value(),
-      downloadDir_ + "/" + albumName_, suffixName_, isAddNum);
+      appSettings_->downloadDir() + "/" + albumName_, suffixName_, isAddNum);
 
   if (QDialog::Accepted == downloadQueueDialog.exec()) {
     ui_->statusbar->showMessage("所选文件下载完成!");
@@ -289,7 +281,7 @@ void MainWindow::OnGetAudioInfoFinished(
   timer_->start(1000);
   for (auto &ai : audioItemList) {
     ui_->statusbar->showMessage(ai->title, 2000);
-    audioItems_.append(ai);
+    audioList_.append(ai);
 
     int rowCount = ui_->tableWidget->rowCount();
     ui_->tableWidget->insertRow(rowCount);
@@ -340,23 +332,23 @@ void MainWindow::on_downloadDirLabel_linkActivated(const QString &) {
   if (800 < secondTime - firstTime) {
     firstTime = secondTime;
   } else {
-    QDesktopServices::openUrl(downloadDir_);
+    QDesktopServices::openUrl(appSettings_->downloadDir());
   }
 }
 
 void MainWindow::on_cookieBtn_clicked() {
-  CookieInputDialog inputDlg(cookie_, this);
+  CookieInputDialog inputDlg(appSettings_->cookie(), this);
 
   if (QDialog::Accepted == inputDlg.exec()) {
     auto cookie = inputDlg.GetCookie();
     if (cookie.isEmpty()) {
       ui_->cookieBtn->setText("未设置Cookie");
       ui_->cookieBtn->setToolTip("");
-      cookie_.clear();
+      appSettings_->setCookie("");
     } else {
       ui_->cookieBtn->setText("已设置Cookie");
       ui_->cookieBtn->setToolTip(cookie);
-      cookie_ = cookie;
+      appSettings_->setCookie(cookie);
     }
   }
 }
@@ -381,4 +373,5 @@ void MainWindow::on_themeComboBox_currentIndexChanged(int index) {
       setStyleSheet(QStringLiteral("QWidget{font: 12pt 'Microsoft YaHei'}"));
       break;
   }
+  appSettings_->setTheme(index);
 }

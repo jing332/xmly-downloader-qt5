@@ -5,9 +5,10 @@
 #include <QThreadPool>
 #include <QTimer>
 
-#include "xmlydownloader.h"
+#include "appsettings.h"
 #include "downloadqueuedialog.h"
 #include "type.h"
+#include "xmlydownloader.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,14 +23,16 @@ class MainWindow : public QMainWindow {
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
+  void ApplySettings();
+
  protected:
   void showEvent(QShowEvent *event) override;
-  void closeEvent(QCloseEvent *event) override;
 
  private:
   void SetStyleSheet(const QString &filePath);
   int GetIntWidth(int n);
-  void ReadConfig();
+  //  void ReadConfig();
+  //  void WriteConfig();
 
  signals:
   void AddAudioItem(AudioItem *item);
@@ -62,19 +65,21 @@ class MainWindow : public QMainWindow {
  private:
   Ui::MainWindow *ui_;
 
-  QList<AudioItem *> audioItems_;
+  QList<AudioItem *> audioList_;
   QMenu *tableWidgetMenu_;
   QTimer *timer_;
   QThreadPool *pool_;
 
+  AppSettings *appSettings_;
+
   /*是否在文件名前添加序号*/
   bool isAddNum = false;
-  /*专辑名称*/
+  //  /*专辑名称*/
   QString albumName_;
-  /*下载路径*/
-  QString downloadDir_;
-  /*Cookie 非免费专辑必填*/
-  QString cookie_;
+  //  /*下载路径*/
+  //  QString downloadDir_;
+  //  /*Cookie 非免费专辑必填*/
+  //  QString cookie_;
 
   /*文件后缀名*/
   QString suffixName_ = QStringLiteral("m4a");
