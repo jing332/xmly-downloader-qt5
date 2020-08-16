@@ -5,14 +5,14 @@ if ("true" -eq $env:CI_WINDOWS) {
     $env:PATH = "$env:APPVEYOR_BUILD_FOLDER\install\bin;C:\go114\bin;C:\msys64\mingw64\bin;" + $env:PATH
 
     # Build Go
-    Set-Location .\cgoqt
+    cd ./src/cgoqt
     go build -buildmode=c-archive
-    Set-Location ..\
+    cd ../../
 
     # Build Qt
-    mkdir .\build
-    Set-Location .\build
-    qmake CONFIG+=release ..\xmly-downloader-qt5.pro
+    mkdir build
+    cd build
+    qmake CONFIG+=release ../src/xmly-downloader-qt5.pro
     mingw32-make -j2
 
     mkdir xmly-downloader-qt5_windows
@@ -32,14 +32,14 @@ elseif ("true" -eq $env:CI_LINUX) {
     $env:PATH = "$env:APPVEYOR_BUILD_FOLDER/qt5/usr/local/qt5-static/bin:" + $env:PATH
     
     # Build Go
-    Set-Location ..\cgoqt
+    cd ../src/cgoqt
     go build -buildmode=c-archive
-    Set-Location ..\
+    cd ../../
     
     # Build Qt
     mkdir build
-    Set-Location build
-    qmake CONFIG+=release ..\xmly-downloader-qt5.pro
+    cd build
+    qmake CONFIG+=release ../src/xmly-downloader-qt5.pro
     make -j2
     
     mkdir xmly-downloader-qt5_linux
@@ -56,14 +56,14 @@ elseif ("true" -eq $env:CI_MACOS) {
     $env:PATH = "$env:APPVEYOR_BUILD_FOLDER/qt5/usr/local/qt5-static/bin:" + $env:PATH
 
     # Build Go
-    Set-Location ..\cgoqt
+    cd ../src/cgoqt
     go build -buildmode=c-archive
-    Set-Location ..\
+    cd ../../
 
     # Build Qt
     mkdir build
     Set-Location build
-    qmake CONFIG+=release ..\xmly-downloader-qt5.pro
+    qmake CONFIG+=release ../src/xmly-downloader-qt5.pro
     make -j2
 
     tar zcvf xmly-downloader-qt5_macos_v$env:APPVEYOR_BUILD_VERSION.tar.gz xmly-downloader-qt5.app
