@@ -1,4 +1,8 @@
-# xmly-downloader-qt5
+<p align="center">
+<img src="http://blog.xmcdn.com/wp-content/uploads/2014/04/%E8%A7%84%E8%8C%831.png">
+</p>
+
+<h1 align="center">- 喜马拉雅FM下载器 GUI -</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/support-Windows-blue?logo=Windows">
@@ -19,7 +23,7 @@
 
 > 本项目的目的在于学习Go+Qt在跨平台的GUI应用，如需进行其他用途使用，请遵照许可协议Fork，使用本软件所造成的一切后果与本人无关。
 
-> 命令行版本: https://github.com/jing332/xmlydownloader
+> API和命令行版本: https://github.com/jing332/xmlydownloader
 
 # 预览
 ![MainWindow](screenshots/MainWindow.png)
