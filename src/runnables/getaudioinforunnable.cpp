@@ -2,30 +2,29 @@
 
 #include <QDebug>
 
-GetAudioInfoRunnable::GetAudioInfoRunnable(int trackID, int page, int pageSize)
-    : audioId_(trackID), page_(page), pageSize_(pageSize) {}
+GetAudioInfoRunnable::GetAudioInfoRunnable(int albumID, int pageID)
+    : albumID_(albumID), pageID_(pageID) {}
 
 void GetAudioInfoRunnable::run() {
-  auto dataError = CgoGetAudioInfo(audioId_, page_, pageSize_);
-  if (dataError->error) {
-    qWarning() << "get audio info fail: " << dataError->error;
-    emit Error(QString(dataError->error), audioId_, page_, pageSize_);
+  auto data = CgoGetAudioInfoListByPageID(albumID_, pageID_);
+  if (data->error) {
+    qWarning() << data->error;
+    emit Failed(albumID_, QString(data->error));
   } else {
-    QList<AudioItem *> list;
-    auto array = static_cast<CArray *>(dataError->data);
-    for (int i = 0; i < array->length; i++) {
-      auto cgoAi =
-          static_cast<CgoAudioItem *>(static_cast<void **>(array->pointer)[i]);
+    QList<AudioInfo *> aiList;
+    auto playlist = static_cast<CgoPlaylist *>(data->data);
+    auto list = static_cast<CArray *>(playlist->list);
+    for (int i = 0; i < list->length; i++) {
+      auto cgo =
+          static_cast<CgoAudioInfo *>(static_cast<void **>(list->pointer)[i]);
 
-      AudioItem *ai = new AudioItem();
-      ai->id = cgoAi->id;
-      ai->url = cgoAi->url;
-      ai->title = cgoAi->title;
-      ai->number = cgoAi->number;
-      list.append(ai);
-      delete cgoAi;
+      AudioInfo *ai =
+          new AudioInfo(cgo->id, cgo->title, cgo->mp3URL32, cgo->mp3URL64,
+                        cgo->m4aURL24, cgo->m4aURL64);
+      aiList.append(ai);
+      delete cgo;
     }
-    emit Finished(list);
+    emit Succeed(albumID_, playlist->maxPageID, aiList);
   }
-  delete dataError;
+  delete data;
 }

@@ -13,8 +13,8 @@ class GetAlbumInfoRunnable : public QObject, public QRunnable {
   void run() override;
 
  signals:
-  void Finished(AlbumInfo *info, int audiobookId);
-  void Error(const QString &err);
+  void Succeed(int albumID, AlbumInfo *info);
+  void Failed(const QString &err);
 
  private:
   int albumID_;

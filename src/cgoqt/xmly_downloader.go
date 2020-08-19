@@ -3,10 +3,8 @@ package main
 import "C"
 import (
 	"fmt"
-	xmlydown "github.com/jing332/xmlydownloader"
-	jsoniter "github.com/json-iterator/go"
+	dl "github.com/jing332/xmlydownloader"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -15,20 +13,13 @@ import (
 	"unsafe"
 )
 
-//#cgo LDFLAGS: -lstdc++
 //#include "cgo.h"
 import "C"
 
 var fileNameRegexp = regexp.MustCompile("[/\\:*?\"<>|]")
 
 func main() {
-	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
-
-	//runtime.LockOSThread()
-	//C.init()
-	//C.callback()
-	//C.start()
-	//runtime.UnlockOSThread()
+	log.SetFlags(log.Lshortfile | log.Ltime)
 }
 
 var uflCallback C.UpdateFileLengthCallback
@@ -40,7 +31,7 @@ func CgoRegisterCallback(callback C.UpdateFileLengthCallback) {
 
 //export CgoGetAlbumInfo
 func CgoGetAlbumInfo(albumID C.int) *C.DataError {
-	title, audioCount, pageCount, err := xmlydown.GetAlbumInfo(int(albumID))
+	title, audioCount, pageCount, err := dl.GetAlbumInfo(int(albumID))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
@@ -49,35 +40,36 @@ func CgoGetAlbumInfo(albumID C.int) *C.DataError {
 	return C.newData(unsafe.Pointer(pAlbumInfo))
 }
 
-//export CgoGetAudioInfo
-func CgoGetAudioInfo(albumID, page, pageSize C.int) *C.DataError {
-	list, err := xmlydown.GetAudioInfo(int(albumID), int(page), int(pageSize))
+//export CgoGetAudioInfoListByPageID
+func CgoGetAudioInfoListByPageID(albumID, pageID C.int) *C.DataError {
+	playlist, err := dl.GetAudioInfoListByPageID(int(albumID), int(pageID))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
 
-	ptrArray := C.newPointerArray(C.int(len(list)))
-	for i, v := range list {
-		//将特殊字符替换为空格
+	ptrArray := C.newPointerArray(C.int(len(playlist.List)))
+	for i, v := range playlist.List {
 		v.Title = fileNameRegexp.ReplaceAllLiteralString(v.Title, " ")
-		C.setPointerArray(ptrArray, C.int(i), C.newAudioItem(C.int(v.TrackId), C.CString(v.Title), C.CString(v.URL)))
+		C.setPointerArray(ptrArray, C.int(i), C.newAudioItem(C.int(v.TrackID), C.CString(v.Title),
+			C.CString(v.PlayURL32), C.CString(v.PlayURL64), C.CString(v.PlayPathAacv224), C.CString(v.PlayPathAacv164)))
 	}
-	cArray := C.newCArray(ptrArray, C.int(len(list)))
 
-	p := C.newData(unsafe.Pointer(cArray))
-	return p
+	cArray := C.newCArray(ptrArray, C.int(len(playlist.List)))
+	cPlaylist := C.newPlaylist(C.int(playlist.MaxPageID), unsafe.Pointer(cArray))
+	return C.newData(unsafe.Pointer(cPlaylist))
 }
 
 //export CgoGetVipAudioInfo
 func CgoGetVipAudioInfo(trackID C.int, cookie *C.char) *C.DataError {
-	ai, err := xmlydown.GetVipAudioInfo(int(trackID), C.GoString(cookie))
+	ai, err := dl.GetVipAudioInfo(int(trackID), C.GoString(cookie))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
 	//将特殊字符替换为空格
 	ai.Title = fileNameRegexp.ReplaceAllLiteralString(ai.Title, " ")
 
-	return C.newData(C.newAudioItem(C.int(ai.TrackId), C.CString(ai.Title), C.CString(ai.URL)))
+	return C.newData(C.newAudioItem(C.int(ai.TrackID), C.CString(ai.Title), nil, nil, nil,
+		C.CString(ai.PlayPathAacv164)))
 }
 
 //DownloadProgress 追踪下载进度
@@ -155,7 +147,7 @@ func CgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 
 //export CgoGetUserInfo
 func CgoGetUserInfo(cookie *C.char) *C.DataError {
-	ui, err := xmlydown.GetUserInfo(C.GoString(cookie))
+	ui, err := dl.GetUserInfo(C.GoString(cookie))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
@@ -169,74 +161,6 @@ func CgoGetUserInfo(cookie *C.char) *C.DataError {
 
 	return C.newData(p)
 }
-
-//AppConfig 应用配置
-type AppConfig struct {
-	AlbumID      int    `json:"albumID"`
-	MaxTaskCount int    `json:"maxTaskCount"`
-	Theme        int    `json:"theme"`
-	Cookie       string `json:"cookie"`
-	DownloadDir  string `json:"downloadDir"`
-}
-
-//export CgoReadConfig
-func CgoReadConfig() *C.AppConfig {
-	f, err := os.Open("config.json")
-	if err != nil {
-		return nil
-	}
-	defer f.Close()
-
-	data, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil
-	}
-
-	var cfg AppConfig
-	err = jsoniter.Unmarshal(data, &cfg)
-	if err != nil {
-		return nil
-	}
-
-	return C.NewAppConfig(C.int(cfg.AlbumID), C.int(cfg.MaxTaskCount), C.int(cfg.Theme),
-		C.CString(cfg.Cookie), C.CString(cfg.DownloadDir))
-}
-
-//export CgoWriteConfig
-func CgoWriteConfig(albumID, maxTaskCount, theme C.int, cookie, downloadDir *C.char) {
-	f, err := os.OpenFile("config.json", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	appCfg := AppConfig{AlbumID: int(albumID), MaxTaskCount: int(maxTaskCount), Theme: int(theme),
-		Cookie: C.GoString(cookie), DownloadDir: C.GoString(downloadDir)}
-	json, err := jsoniter.Marshal(appCfg)
-	if err != nil {
-		return
-	}
-	f.Write(json)
-}
-
-////export cgoGetFileLength
-//func cgoGetFileLength(cUrl *C.char) *C.DataError {
-//	var url string = C.GoString(cUrl)
-//
-//	request, err := http.NewRequest("HEAD", url, nil)
-//	if err != nil {
-//		return C.newDataError(nil, C.CString(err.Error()))
-//	}
-//
-//	resp, err := client.Do(request)
-//	if err != nil {
-//		return C.newDataError(nil, C.CString(err.Error()))
-//	}
-//	defer resp.Body.Close()
-//
-//	cLong := C.long(resp.ContentLength)
-//	return C.newDataError(unsafe.Pointer(&cLong), C.CString(""))
-//}
 
 var client = http.Client{}
 
@@ -252,3 +176,23 @@ func httpGet(url string) (*http.Response, error) {
 
 	return client.Do(req)
 }
+
+////export CgoGetAllAudioInfo
+//func CgoGetAllAudioInfo(albumID C.int) *C.DataError {
+//	list, err := dl.GetAllAudioInfo(int(albumID))
+//	if err != nil {
+//		return C.newDataError(nil, C.CString(err.Error()))
+//	}
+//
+//	ptrArray := C.newPointerArray(C.int(len(list)))
+//	for i, v := range list {
+//		//将特殊字符替换为空格
+//		v.Title = fileNameRegexp.ReplaceAllLiteralString(v.Title, " ")
+//		C.setPointerArray(ptrArray, C.int(i), C.newAudioItem(C.int(v.TrackID), C.CString(v.Title),
+//			C.CString(v.PlayURL32), C.CString(v.PlayURL64), C.CString(v.PlayPathAacv224), C.CString(v.PlayPathAacv164)))
+//	}
+//	cArray := C.newCArray(ptrArray, C.int(len(list)))
+//
+//	p := C.newData(unsafe.Pointer(cArray))
+//	return p
+//}

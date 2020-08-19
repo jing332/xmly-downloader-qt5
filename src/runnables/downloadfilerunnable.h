@@ -4,16 +4,16 @@
 #include <QObject>
 #include <QRunnable>
 
-class DownloadRunnable : public QObject, public QRunnable {
+class DownloadFileRunnable : public QObject, public QRunnable {
   Q_OBJECT
  public:
-  DownloadRunnable(int id, const QString &url, const QString &filePath);
+  DownloadFileRunnable(int id, const QString &url, const QString &filePath);
 
   void run() override;
 
  signals:
   void Start(int id);
-  void Finished(int id, const QString &error);
+  void Finished(int id, const QString &err);
 
  private:
   int id_ = -1;

@@ -2,18 +2,17 @@
 
 #include <QDebug>
 
-GetAlbumInfoRunnable::GetAlbumInfoRunnable(int audioBookId)
-    : albumID_(audioBookId) {}
+GetAlbumInfoRunnable::GetAlbumInfoRunnable(int albumID) : albumID_(albumID) {}
 
 void GetAlbumInfoRunnable::run() {
   auto dataErr = CgoGetAlbumInfo(albumID_);
   if (dataErr->error) {
-    emit Error(QString(dataErr->error));
+    emit Failed(QString(dataErr->error));
     delete dataErr;
     return;
   }
 
   auto albumInfo = static_cast<AlbumInfo*>(dataErr->data);
   delete dataErr;
-  emit Finished(static_cast<AlbumInfo*>(albumInfo), albumID_);
+  emit Succeed(albumID_, static_cast<AlbumInfo*>(albumInfo));
 }

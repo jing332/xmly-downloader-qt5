@@ -1,33 +1,33 @@
-#ifndef DOWNLOADVIPFILERUNNABLE_H
-#define DOWNLOADVIPFILERUNNABLE_H
+//#ifndef DOWNLOADVIPFILERUNNABLE_H
+//#define DOWNLOADVIPFILERUNNABLE_H
 
-#include <QObject>
-#include <QRunnable>
+//#include <QObject>
+//#include <QRunnable>
 
-#include "type.h"
-#include "xmlydownloader.h"
+//#include "audioinfo.h"
+//#include "xmlydownloader.h"
 
-class DownloadVipFileRunnable : public QObject, public QRunnable {
-  Q_OBJECT
- public:
-  DownloadVipFileRunnable(int trackID, const QString &cookie,
-                          const QString &filePath, AudioItem *ai);
+// class DownloadVipFileRunnable : public QObject, public QRunnable {
+//  Q_OBJECT
+// public:
+//  DownloadVipFileRunnable(int trackID, const QString &cookie,
+//                          const QString &filePath, AudioInfo *ai);
 
- protected:
-  void run() override;
+// protected:
+//  void run() override;
 
- signals:
-  void StartGetInfo(int trackID);
-  void StartDownload(int trackID, AudioItem *ai);
-  void DownloadError(int trackID, AudioItem *ai, const QString &err);
-  void GetInfoError(int trackID, AudioItem *ai, const QString &err);
-  void Finished(int trackID);
+// signals:
+//  void StartGetInfo(int trackID);
+//  void StartDownload(int trackID, AudioInfo *ai);
+//  void DownloadError(int trackID, AudioInfo *ai, const QString &err);
+//  void GetInfoError(int trackID, AudioInfo *ai, const QString &err);
+//  void Finished(int trackID);
 
- private:
-  int trackID_;
-  QString cookie_;
-  QString filePath_;
-  AudioItem *ai_ = nullptr;
-};
+// private:
+//  int trackID_;
+//  QString cookie_;
+//  QString filePath_;
+//  AudioInfo *ai_ = nullptr;
+//};
 
-#endif  // DOWNLOADVIPFILERUNNABLE_H
+//#endif  // DOWNLOADVIPFILERUNNABLE_H

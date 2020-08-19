@@ -7,7 +7,6 @@
 
 #include "appsettings.h"
 #include "downloadqueuedialog.h"
-#include "type.h"
 #include "xmlydownloader.h"
 
 QT_BEGIN_NAMESPACE
@@ -26,16 +25,11 @@ class MainWindow : public QMainWindow {
   void ApplySettings();
 
  protected:
-  void showEvent(QShowEvent *event) override;
+  void showEvent(QShowEvent *event);
 
  private:
   void SetStyleSheet(const QString &filePath);
   int GetIntWidth(int n);
-  //  void ReadConfig();
-  //  void WriteConfig();
-
- signals:
-  void AddAudioItem(AudioItem *item);
 
  private slots:
   void on_selectDirBtn_clicked();
@@ -49,23 +43,20 @@ class MainWindow : public QMainWindow {
   void on_addNumCheckBox_clicked();
   void on_mp3RadioBtn_clicked();
   void on_m4aRadioBtn_clicked();
-
-  void OnGetAlbumInfoFinished(AlbumInfo *info, int audiobookId);
-  void OnGetAlbumInfoError(const QString &err);
-
-  void OnGetAudioInfoFinished(const QList<AudioItem *> &audioItemList);
-  void OnGetAudioInfoError(const QString reason, int audiobookId, int page,
-                           int pageSize);
-  void Timeout();
-
   void on_cookieBtn_clicked();
-
   void on_themeComboBox_currentIndexChanged(int index);
+
+  void OnGetAlbumInfoFinished(int albumID, AlbumInfo *info);
+  void OnGetAlbumInfoFailed(const QString &err);
+  void OnGetAudioInfoFailed(int albumID, const QString &err);
+
+  void AddAudioInfoItem(const QList<AudioInfo *> &list);
+  void Timeout();
 
  private:
   Ui::MainWindow *ui_;
 
-  QList<AudioItem *> audioList_;
+  QList<AudioInfo *> audioList_;
   QMenu *tableWidgetMenu_;
   QTimer *timer_;
   QThreadPool *pool_;
@@ -74,15 +65,10 @@ class MainWindow : public QMainWindow {
 
   /*是否在文件名前添加序号*/
   bool isAddNum = false;
-  //  /*专辑名称*/
+  /*专辑名称*/
   QString albumName_;
-  //  /*下载路径*/
-  //  QString downloadDir_;
-  //  /*Cookie 非免费专辑必填*/
-  //  QString cookie_;
-
   /*文件后缀名*/
-  QString suffixName_ = QStringLiteral("m4a");
+  QString extName = QStringLiteral("m4a");
   /*特殊字符的正则表达式*/
   QRegularExpression fileNameReg_ = QRegularExpression("[/\\:*?\"<>|]");
 };

@@ -4,23 +4,24 @@
 #include <QObject>
 #include <QRunnable>
 
+#include "audioinfo.h"
 #include "xmlydownloader.h"
-#include "type.h"
 
 class GetAudioInfoRunnable : public QObject, public QRunnable {
   Q_OBJECT
  public:
-  GetAudioInfoRunnable(int audioId, int page, int pageSize);
+  GetAudioInfoRunnable(int albumID, int pageID);
+
+ protected:
   void run() override;
 
  signals:
-  void Finished(const QList<AudioItem *> &audioItemList);
-  void Error(const QString reason, int audiobookId, int page, int pageSize);
+  void Succeed(int albumID, int maxPageID, const QList<AudioInfo *> &list);
+  void Failed(int albumID, const QString &err);
 
  private:
-  int audioId_;
-  int page_;
-  int pageSize_;
+  int albumID_;
+  int pageID_;
 };
 
 #endif  // GETAUDIOINFORUNNABLE_H

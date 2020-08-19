@@ -19,15 +19,22 @@ typedef struct {
   char* title;
   int audioCount;
   int pageCount;
-  //  char* error;
 } AlbumInfo;
 
 typedef struct {
   int id;
   char* title;
-  char* url;
+  char* mp3URL32;
+  char* mp3URL64;
+  char* m4aURL24;
+  char* m4aURL64;
   char* number;
-} CgoAudioItem;
+} CgoAudioInfo;
+
+typedef struct {
+ int maxPageID;
+ void* list;
+} CgoPlaylist;
 
 typedef struct {
   int ret;
@@ -37,14 +44,6 @@ typedef struct {
   int isVip;
   char* nickName;
 } UserInfo;
-
-typedef struct {
-  int albumID;
-  int maxTaskCount;
-  int theme;
-  const char* cookie;
-  const char* downloadDir;
-} AppConfig;
 
 typedef void (*UpdateFileLengthCallback)(int trackID, long* contentLength,
                                          long* currentLength);
@@ -64,13 +63,26 @@ static inline AlbumInfo* newAlbumInfo(char* title, int audioCount,
   return p;
 }
 
-static inline void* newAudioItem(int id, char* title, char* url) {
-  CgoAudioItem* p = (CgoAudioItem*)malloc(sizeof(CgoAudioItem));
-  memset(p, 0, sizeof(CgoAudioItem));
+static inline void* newAudioItem(int id, char* title, char* mp3URL32,
+                                 char* mp3URL64, char* m4aUURL24,
+                                 char* m4aURL64) {
+  CgoAudioInfo* p = (CgoAudioInfo*)malloc(sizeof(CgoAudioInfo));
+  memset(p, 0, sizeof(CgoAudioInfo));
   p->id = id;
   p->title = title;
-  p->url = url;
+  p->mp3URL32 = mp3URL32;
+  p->mp3URL64 = mp3URL64;
+  p->m4aURL24 = m4aUURL24;
+  p->m4aURL64 = m4aURL64;
   p->number = NULL;
+  return p;
+}
+
+static inline void* newPlaylist(int maxPageID, void* list){
+  CgoPlaylist *p = (CgoPlaylist*)malloc(sizeof (CgoPlaylist));
+  memset(p, 0, sizeof (CgoPlaylist));
+  p->maxPageID = maxPageID;
+  p->list = list;
   return p;
 }
 
@@ -118,19 +130,6 @@ static inline void* newUserInfo(int ret, char* msg, int uid, int isVip,
   p->uid = uid;
   p->isVip = isVip;
   p->nickName = nickName;
-  return p;
-}
-
-static inline AppConfig* NewAppConfig(int albumID, int maxTaskCount, int theme,
-                                      const char* cookie,
-                                      const char* downloadDir) {
-  AppConfig* p = (AppConfig*)malloc(sizeof(AppConfig));
-  memset(p, 0, sizeof(AppConfig));
-  p->albumID = albumID;
-  p->maxTaskCount = maxTaskCount;
-  p->theme = theme;
-  p->cookie = cookie;
-  p->downloadDir = downloadDir;
   return p;
 }
 

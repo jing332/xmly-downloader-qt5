@@ -26,9 +26,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     appsettings.cpp \
+    audioinfo.cpp \
+    downloaditemdata.cpp \
     main.cpp \
-    runnables/downloadrunnable.cpp \
-    runnables/downloadvipfilerunnable.cpp \
+    runnables/downloadfilerunnable.cpp \
     runnables/getalbuminforunnable.cpp \
     runnables/getaudioinforunnable.cpp \
     runnables/getuserinforunnable.cpp \
@@ -40,9 +41,10 @@ SOURCES += \
 
 HEADERS += \
   appsettings.h \
-  type.h \
+  audioinfo.h \
+  downloaditemdata.h \
+  runnables/downloadfilerunnable.h \
   appevent.h \
-  runnables/downloadrunnable.h \
   runnables/downloadvipfilerunnable.h \
   runnables/getalbuminforunnable.h \
   runnables/getaudioinforunnable.h \

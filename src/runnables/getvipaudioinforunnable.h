@@ -4,14 +4,15 @@
 #include <QObject>
 #include <QRunnable>
 
+#include "audioinfo.h"
+#include "downloaditemdata.h"
 #include "xmlydownloader.h"
-#include "type.h"
 
 class GetVipAudioInfoRunnable : public QObject, public QRunnable {
   Q_OBJECT
  public:
   GetVipAudioInfoRunnable(int trackID, const QString &cookie,
-                          const QString &filePath);
+                          DownloadItemData *data);
 
  protected:
   void run() override;
@@ -19,12 +20,12 @@ class GetVipAudioInfoRunnable : public QObject, public QRunnable {
  private:
   int trackID_;
   QString cookie_;
-  QString filePath_;
+  DownloadItemData *dlItemData_;
 
  signals:
-  void Start(int trackID);
-  void Error(int trackID, const QString &err);
-  void Finished(int trackID, AudioItem *ai);
+  void Start(int trackID, int number);
+  void Failed(int trackID, const QString &err, DownloadItemData *data);
+  void Finished(AudioInfo *ai, DownloadItemData *data);
 };
 
 #endif  // GETVIPAUDIOINFORUNNABLE_H

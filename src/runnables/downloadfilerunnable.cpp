@@ -1,4 +1,4 @@
-#include "downloadrunnable.h"
+#include "downloadfilerunnable.h"
 
 #include <QDateTime>
 #include <QDebug>
@@ -7,11 +7,11 @@
 
 #include "xmlydownloader.h"
 
-DownloadRunnable::DownloadRunnable(int id, const QString &url,
-                                   const QString &filePath)
+DownloadFileRunnable::DownloadFileRunnable(int id, const QString &url,
+                                           const QString &filePath)
     : id_(id), url_(url), filePath_(filePath) {}
 
-void DownloadRunnable::run() {
+void DownloadFileRunnable::run() {
   emit Start(id_);
   auto *err =
       CgoDownloadFile(const_cast<char *>(url_.toStdString().c_str()),
