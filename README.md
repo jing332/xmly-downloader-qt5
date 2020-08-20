@@ -18,7 +18,10 @@
 
 > Golang API: https://github.com/jing332/xmlydownloader
 
-# 预览
+# Screenshots
+<details>
+<summary>展开查看</summary>
+  
 ![MainWindow](screenshots/MainWindow.png)
 
 ![DownloadDialog](screenshots/DownloadDialog.png)
@@ -28,3 +31,15 @@
 ![psblack](screenshots/psblack.png)
 
 ![flatwhite](screenshots/flatwhite.png)
+</details>
+
+# Build
+
+### 开发环境
+`Qt 5.12`  
+`Go 1.13`
+
+1. 将 `Qt安装目录\Qt版本号\mingwXX_64\bin` 加入到系统PATH变量, 使用命令 `gcc -v` 测试是否生效.  
+2. 使用命令 `git clone https://github.com/jing332/xmly-downloader-qt5` 将项目克隆到本地.  
+3. 进入 `/src/cgoqt` 文件夹, 使用命令 `go build -buildmode=c-archive -o xmlydownloader` 生成C静态库.  
+4. 最后, 打开 `Qt Creator` 导入 `/src/xmly-downloader-qt5.pro` 即可编译运行.  
