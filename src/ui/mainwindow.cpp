@@ -238,11 +238,11 @@ void MainWindow::OnGetAlbumInfoFinished(int albumID, AlbumInfo *ai) {
   ui_->titleLabel->setText(text);
   albumName_ = QString(ai->title).replace(fileNameReg_, " ");
 
-  auto runnable = new GetAudioInfoRunnable(albumID, 0);
+  auto runnable = new GetAudioInfoRunnable(albumID, 1);
   connect(runnable, &GetAudioInfoRunnable::Succeed, this,
           [&](int albumID, int maxPageID, const QList<AudioInfo *> &list) {
             AddAudioInfoItem(list);
-            for (int i = 1; i <= maxPageID; i++) {
+            for (int i = 2; i <= maxPageID; i++) {
               auto run = new GetAudioInfoRunnable(albumID, i);
               connect(run, &GetAudioInfoRunnable::Succeed, this,
                       [&](int albumID, int maxPageID,
