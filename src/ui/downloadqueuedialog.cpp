@@ -91,7 +91,6 @@ void DownloadQueueDialog::DownloadVipFile(int trackID, const QString &cookie,
   connect(runnable, &GetVipAudioInfoRunnable::Start, this,
           [&](int trackID, int number) {
             Q_UNUSED(trackID);
-            qDebug() << ui_->downloadingListWidget->count();
             auto itemWidget = GetDownloadingItemWidget(number);
             itemWidget->setProgressBarVisible(true);
             itemWidget->SetStatus("获取下载地址...");
@@ -110,7 +109,6 @@ void DownloadQueueDialog::DownloadVipFile(int trackID, const QString &cookie,
 
   connect(runnable, &GetVipAudioInfoRunnable::Finished, this,
           [&](AudioInfo *ai, DownloadItemData *data) {
-            data->setName(ai->title() + ".m4a");
             data->setUri(ai->m4aURL64());
             DownloadFile(data);
           });
