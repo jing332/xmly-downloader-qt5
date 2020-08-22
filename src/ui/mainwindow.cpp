@@ -138,7 +138,10 @@ void MainWindow::ApplySettings() {
   ui_->downloadDirLineEdit->setText(appSettings_->downloadDir());
 }
 
-void MainWindow::Timeout() { ui_->parseBtn->setEnabled(true); }
+void MainWindow::Timeout() {
+  ui_->parseBtn->setEnabled(true);
+  ui_->startDownloadBtn->setEnabled(true);
+}
 
 /*选择目录按钮的点击事件*/
 void MainWindow::on_selectDirBtn_clicked() {
@@ -159,6 +162,7 @@ void MainWindow::on_parseBtn_clicked() {
   }
 
   appSettings_->setAlbumID(albumID);
+  ui_->startDownloadBtn->setDisabled(true);
 
   qDeleteAll(audioList_);
   audioList_.clear();
