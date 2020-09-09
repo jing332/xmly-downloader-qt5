@@ -51,6 +51,7 @@ func CgoGetAudioInfoListByPageID(albumID, pageID C.int) *C.DataError {
 	ptrArray := C.newPointerArray(C.int(len(playlist.List)))
 	for i, v := range playlist.List {
 		v.Title = fileNameRegexp.ReplaceAllLiteralString(v.Title, " ")
+                v.Title = strings.ReplaceAll(v.Title, "\t", "")
                 v.Title = strings.TrimSpace(v.Title)
 		C.setPointerArray(ptrArray, C.int(i), C.newAudioItem(C.int(v.TrackID), C.CString(v.Title),
 			C.CString(v.PlayURL32), C.CString(v.PlayURL64), C.CString(v.PlayPathAacv224), C.CString(v.PlayPathAacv164)))
@@ -69,6 +70,7 @@ func CgoGetVipAudioInfo(trackID C.int, cookie *C.char) *C.DataError {
 	}
 	//将特殊字符替换为空格
 	ai.Title = fileNameRegexp.ReplaceAllLiteralString(ai.Title, " ")
+           v.Title = strings.ReplaceAll(v.Title, "\t", "")
         ai.Title = strings.TrimSpace(ai.Title)
 	return C.newData(C.newAudioItem(C.int(ai.TrackID), C.CString(ai.Title), nil, nil, nil,
 		C.CString(ai.PlayPathAacv164)))
