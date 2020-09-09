@@ -70,7 +70,7 @@ func CgoGetVipAudioInfo(trackID C.int, cookie *C.char) *C.DataError {
 	}
 	//将特殊字符替换为空格
 	ai.Title = fileNameRegexp.ReplaceAllLiteralString(ai.Title, " ")
-           v.Title = strings.ReplaceAll(v.Title, "\t", "")
+        ai.Title = strings.ReplaceAll(ai.Title, "\t", "")
         ai.Title = strings.TrimSpace(ai.Title)
 	return C.newData(C.newAudioItem(C.int(ai.TrackID), C.CString(ai.Title), nil, nil, nil,
 		C.CString(ai.PlayPathAacv164)))
