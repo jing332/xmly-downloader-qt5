@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>QRCodeDialog</class>
  <widget class="QDialog" name="QRCodeDialog">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -30,6 +33,9 @@
   </property>
   <property name="windowTitle">
    <string>二维码</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item alignment="Qt::AlignHCenter|Qt::AlignTop">
