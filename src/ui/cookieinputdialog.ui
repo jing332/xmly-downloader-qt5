@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>347</width>
+    <width>358</width>
     <height>300</height>
    </rect>
   </property>
@@ -41,10 +41,20 @@
      <property name="text">
       <string/>
      </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+     </property>
     </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="qrCodeBtn">
+       <property name="text">
+        <string>二维码</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QPushButton" name="checkBtn">
        <property name="enabled">

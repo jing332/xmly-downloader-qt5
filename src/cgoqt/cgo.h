@@ -45,6 +45,13 @@ typedef struct {
   char* nickName;
 } UserInfo;
 
+typedef struct {
+  int ret;
+  char* msg;
+  char* qrID;
+  char* img;
+} CgoQRCode;
+
 typedef void (*UpdateFileLengthCallback)(int trackID, long* contentLength,
                                          long* currentLength);
 
@@ -130,6 +137,16 @@ static inline void* newUserInfo(int ret, char* msg, int uid, int isVip,
   p->uid = uid;
   p->isVip = isVip;
   p->nickName = nickName;
+  return p;
+}
+
+static inline void* newQRCode(int ret, char* msg, char* qrID, char *img){
+  CgoQRCode *p = (CgoQRCode*)malloc(sizeof(CgoQRCode));
+  memset(p, 0, sizeof(CgoQRCode));
+  p->ret = ret;
+  p->msg = msg;
+  p->qrID = qrID;
+  p->img = img;
   return p;
 }
 

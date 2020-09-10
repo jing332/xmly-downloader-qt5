@@ -14,7 +14,7 @@
    <string>喜马拉雅有声小说批量下载器(此工具仅为学习交流使用, 音频版权归喜马拉雅FM所有.)</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../res/xmly-downloader-qt5.qrc">
+   <iconset resource="../resources/xmly-downloader-qt5.qrc">
     <normaloff>:/ximalaya.ico</normaloff>:/ximalaya.ico</iconset>
   </property>
   <property name="styleSheet">
@@ -436,7 +436,7 @@ font: 9pt &quot;微软雅黑&quot;;</string>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources>
-  <include location="../res/xmly-downloader-qt5.qrc"/>
+  <include location="../resources/xmly-downloader-qt5.qrc"/>
  </resources>
  <connections/>
 </ui>

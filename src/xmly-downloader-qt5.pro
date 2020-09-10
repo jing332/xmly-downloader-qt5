@@ -29,31 +29,37 @@ SOURCES += \
     audioinfo.cpp \
     downloaditemdata.cpp \
     main.cpp \
+    runnables/checkqrcoderunnable.cpp \
     runnables/downloadfilerunnable.cpp \
     runnables/getalbuminforunnable.cpp \
     runnables/getaudioinforunnable.cpp \
+    runnables/getqrcoderunnable.cpp \
     runnables/getuserinforunnable.cpp \
     runnables/getvipaudioinforunnable.cpp \
     ui/cookieinputdialog.cpp \
     ui/downloadqueuedialog.cpp \
     ui/downloadtaskitemwidget.cpp \
-    ui/mainwindow.cpp
+    ui/mainwindow.cpp \
+    ui/qrcodedialog.cpp
 
 HEADERS += \
   appsettings.h \
   audioinfo.h \
   downloaditemdata.h \
+  runnables/checkqrcoderunnable.h \
   runnables/downloadfilerunnable.h \
   appevent.h \
   runnables/downloadvipfilerunnable.h \
   runnables/getalbuminforunnable.h \
   runnables/getaudioinforunnable.h \
+  runnables/getqrcoderunnable.h \
   runnables/getuserinforunnable.h \
   runnables/getvipaudioinforunnable.h \
   ui/cookieinputdialog.h \
   ui/downloadqueuedialog.h \
   ui/downloadtaskitemwidget.h \
-  ui/mainwindow.h
+  ui/mainwindow.h \
+  ui/qrcodedialog.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -63,7 +69,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 FORMS += \
   ui/cookieinputdialog.ui \
   ui/downloadqueuedialog.ui \
-  ui/mainwindow.ui
+  ui/mainwindow.ui \
+  ui/qrcodedialog.ui
 
 RESOURCES += \
   resources/qss.qrc \

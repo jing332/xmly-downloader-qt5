@@ -3,13 +3,14 @@ package main
 import "C"
 import (
 	"fmt"
-	dl "github.com/jing332/xmlydownloader"
+	xmly "github.com/jing332/xmlydownloader"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"unsafe"
 )
 
@@ -31,7 +32,7 @@ func CgoRegisterCallback(callback C.UpdateFileLengthCallback) {
 
 //export CgoGetAlbumInfo
 func CgoGetAlbumInfo(albumID C.int) *C.DataError {
-	title, audioCount, pageCount, err := dl.GetAlbumInfo(int(albumID))
+	title, audioCount, pageCount, err := xmly.GetAlbumInfo(int(albumID))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
@@ -42,7 +43,7 @@ func CgoGetAlbumInfo(albumID C.int) *C.DataError {
 
 //export CgoGetAudioInfoListByPageID
 func CgoGetAudioInfoListByPageID(albumID, pageID C.int) *C.DataError {
-	playlist, err := dl.GetAudioInfoListByPageID(int(albumID), int(pageID))
+	playlist, err := xmly.GetAudioInfoListByPageID(int(albumID), int(pageID))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
@@ -50,6 +51,8 @@ func CgoGetAudioInfoListByPageID(albumID, pageID C.int) *C.DataError {
 	ptrArray := C.newPointerArray(C.int(len(playlist.List)))
 	for i, v := range playlist.List {
 		v.Title = fileNameRegexp.ReplaceAllLiteralString(v.Title, " ")
+		v.Title = strings.ReplaceAll(v.Title, "\t", "")
+		v.Title = strings.TrimSpace(v.Title)
 		C.setPointerArray(ptrArray, C.int(i), C.newAudioItem(C.int(v.TrackID), C.CString(v.Title),
 			C.CString(v.PlayURL32), C.CString(v.PlayURL64), C.CString(v.PlayPathAacv224), C.CString(v.PlayPathAacv164)))
 	}
@@ -61,13 +64,14 @@ func CgoGetAudioInfoListByPageID(albumID, pageID C.int) *C.DataError {
 
 //export CgoGetVipAudioInfo
 func CgoGetVipAudioInfo(trackID C.int, cookie *C.char) *C.DataError {
-	ai, err := dl.GetVipAudioInfo(int(trackID), C.GoString(cookie))
+	ai, err := xmly.GetVipAudioInfo(int(trackID), C.GoString(cookie))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
 	//将特殊字符替换为空格
 	ai.Title = fileNameRegexp.ReplaceAllLiteralString(ai.Title, " ")
-
+	ai.Title = strings.ReplaceAll(ai.Title, "\t", "")
+	ai.Title = strings.TrimSpace(ai.Title)
 	return C.newData(C.newAudioItem(C.int(ai.TrackID), C.CString(ai.Title), nil, nil, nil,
 		C.CString(ai.PlayPathAacv164)))
 }
@@ -91,7 +95,7 @@ func CgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 	var url string = C.GoString(cUrl)
 	var filePath string = C.GoString(cFilePath)
 
-	resp, err := client.Head(url)
+	resp, err := http.Head(url)
 	if err != nil {
 		return C.CString(err.Error())
 	}
@@ -107,7 +111,7 @@ func CgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 		}
 	}
 
-	resp, err = httpGet(url)
+	resp, err = xmly.HttpGet(url, xmly.Android)
 	if err != nil {
 		return C.CString(fmt.Sprintf("download %s fail: %s", url, err.Error()))
 	}
@@ -133,9 +137,7 @@ func CgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 	downloadProgress.ProgressEvent = func() {
 		contentLength = C.long(downloadProgress.ContentLength)
 		currentLength = C.long(downloadProgress.CurrentLength)
-		//fmt.Println("1")
 		C.UpdateFileLength(uflCallback, id, &contentLength, &currentLength)
-		//fmt.Println("2")
 	}
 	_, err = io.Copy(io.MultiWriter(file, downloadProgress), resp.Body)
 	if err != nil {
@@ -147,7 +149,7 @@ func CgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 
 //export CgoGetUserInfo
 func CgoGetUserInfo(cookie *C.char) *C.DataError {
-	ui, err := dl.GetUserInfo(C.GoString(cookie))
+	ui, err := xmly.GetUserInfo(C.GoString(cookie))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
@@ -158,28 +160,35 @@ func CgoGetUserInfo(cookie *C.char) *C.DataError {
 	}
 	var p unsafe.Pointer
 	p = C.newUserInfo(C.int(ui.Ret), C.CString(ui.Msg), C.int(ui.Data.UID), C.int(isVip), C.CString(ui.Data.Nickname))
-
 	return C.newData(p)
 }
 
-var client = http.Client{}
-
-func httpGet(url string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", url, nil)
+//export CgoGetQRCode
+func CgoGetQRCode() *C.DataError {
+	qrCode, err := xmly.GetQRCode()
 	if err != nil {
-		return nil, err
+		return C.newDataError(nil, C.CString(err.Error()))
 	}
 
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
-	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4139.0 Safari/537.36 Edg/84.0.516.1")
+	p := C.newQRCode(C.int(qrCode.Ret), C.CString(qrCode.Msg), C.CString(qrCode.QrID), C.CString(qrCode.Img))
+	return C.newData(p)
+}
 
-	return client.Do(req)
+//export CgoCheckQRCode
+func CgoCheckQRCode(qrID *C.char) *C.char {
+	status, cookie, err := xmly.CheckQRCodeStatus(C.GoString(qrID))
+	if err != nil {
+		return nil
+	}
+	if status.Ret == 0 {
+		return C.CString(cookie)
+	}
+	return nil
 }
 
 ////export CgoGetAllAudioInfo
 //func CgoGetAllAudioInfo(albumID C.int) *C.DataError {
-//	list, err := dl.GetAllAudioInfo(int(albumID))
+//	list, err := xmly.GetAllAudioInfo(int(albumID))
 //	if err != nil {
 //		return C.newDataError(nil, C.CString(err.Error()))
 //	}

@@ -9,6 +9,8 @@
   <img src="https://img.shields.io/badge/support-Linux-yellow?logo=Linux">
   <img src="https://img.shields.io/badge/support-MacOS-green?logo=apple">
   <br />
+  <img src="https://github.com/jing332/xmly-downloader-qt5/workflows/QMake%20Build%20Matrix/badge.svg?branch=master">
+  <br />
   <img src="http://hits.dwyl.com/jing332/xmly-downloader-qt5.svg">
 </p>
 

@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QThreadPool>
 
+#include "qrcodedialog.h"
 #include "runnables/getuserinforunnable.h"
 #include "ui_cookieinputdialog.h"
 
@@ -18,8 +19,20 @@ CookieInputDialog::~CookieInputDialog() { delete ui_; }
 
 QString CookieInputDialog::GetCookie() { return cookie_; }
 
+void CookieInputDialog::on_qrCodeBtn_clicked() {
+  QRCodeDialog dlg(this);
+  dlg.show();
+  dlg.ShowQRCode();
+  if (QDialog::Accepted == dlg.exec()) {
+    cookie_ = dlg.Cookie();
+    ui_->plainTextEdit->setPlainText(cookie_);
+    on_checkBtn_clicked();
+  }
+}
+
 void CookieInputDialog::on_checkBtn_clicked() {
   ui_->userInfoLabel->clear();
+  ui_->userInfoLabel->setToolTip("");
   ui_->okBtn->setEnabled(false);
   ui_->checkBtn->setEnabled(false);
 
@@ -47,7 +60,9 @@ void CookieInputDialog::on_checkBtn_clicked() {
           });
 
   connect(runnable, &GetUserInfoRunnable::Error, this, [&](const QString &err) {
-    ui_->userInfoLabel->setText(QStringLiteral("请求失败: %1").arg(err));
+    ui_->userInfoLabel->setText(
+        QStringLiteral("请求失败(将鼠标指针悬浮到此处查看详情)"));
+    ui_->userInfoLabel->setToolTip(err);
     ui_->checkBtn->setEnabled(true);
   });
 

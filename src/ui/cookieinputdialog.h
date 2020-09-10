@@ -17,6 +17,7 @@ class CookieInputDialog : public QDialog {
   QString GetCookie();
 
  private slots:
+  void on_qrCodeBtn_clicked();
   void on_checkBtn_clicked();
   void on_okBtn_clicked();
   void on_plainTextEdit_textChanged();
