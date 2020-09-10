@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/support-Linux-yellow?logo=Linux">
   <img src="https://img.shields.io/badge/support-MacOS-green?logo=apple">
   <br />
-  <img src="https://github.com/jing332/xmly-downloader-qt5/workflows/QMake%20Build%20Matrix/badge.svg?branch=master">
+  <a href="https://github.com/jing332/xmly-downloader-qt5/actions"><img src="https://github.com/jing332/xmly-downloader-qt5/workflows/QMake%20Build%20Matrix/badge.svg?branch=master"><a/>
   <br />
   <img src="http://hits.dwyl.com/jing332/xmly-downloader-qt5.svg">
 </p>
@@ -24,13 +24,13 @@
 <details>
 <summary>展开查看</summary>
   
-![MainWindow](screenshots/MainWindow.png)
+![MainWindow](images/MainWindow.png)
 
-![DownloadDialog](screenshots/DownloadDialog.png)
+![DownloadDialog](images/DownloadDialog.png)
 
-![lightblue](screenshots/lightblue.png)
+![lightblue](images/lightblue.png)
 
-![psblack](screenshots/psblack.png)
+![psblack](images/psblack.png)
 
 ![flatwhite](screenshots/flatwhite.png)
 </details>
