@@ -32,7 +32,7 @@
 
 ![psblack](images/psblack.png)
 
-![flatwhite](screenshots/flatwhite.png)
+![flatwhite](images/flatwhite.png)
 </details>
 
 # Build
