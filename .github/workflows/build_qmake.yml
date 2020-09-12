@@ -17,6 +17,33 @@ defaults:
     shell: pwsh
 
 jobs:
+   Upload:
+     runs-on: ubuntu-latest
+     needs: build 
+     
+     steps:
+      - uses: actions/checkout@v2.1.0
+      - uses: actions/setup-node@v2.1.1
+        with: 
+          node-version: v14.3.0 
+          
+      - name: Download All Build Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ./download
+       
+      - name: Upload to WebDAV
+        run: |
+          git clone https://github.com/ame-yu/plz-download.git
+          cd plz-download
+          mv ../download ./
+          npm i
+          npm start
+        env:
+          url: ${{ secrets.nutstore_url }}
+          username: ${{ secrets.nutstore_username }}
+          password: ${{ secrets.nutstore_password }}
+  
    build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
