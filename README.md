@@ -35,6 +35,12 @@
 ![flatwhite](images/flatwhite.png)
 </details>
 
+# Download
+
+自动同步[Github Actions](https://github.com/jing332/xmly-downloader-qt5/actions)最新构建产物到坚果云
+
+[win32](https://www.jianguoyun.com/p/DevyI60Q5dvlCBieh7sD) | [linux](https://www.jianguoyun.com/p/DaX_DxwQ5dvlCBjxjbsD) | [macOS](https://www.jianguoyun.com/p/DYp_qTkQ5dvlCBiOjrsD)
+
 # Build
 
 > 如需静态编译本项目, 请参考 [ci/appveyor_build.ps1](https://github.com/jing332/xmly-downloader-qt5/blob/master/ci/appveyor_build.ps1) 或 [.github/workflows/build_qmake.yml](https://github.com/jing332/xmly-downloader-qt5/blob/master/.github/workflows/build_qmake.yml)
