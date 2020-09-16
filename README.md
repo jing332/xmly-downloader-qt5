@@ -37,7 +37,7 @@
 
 # Download
 
-自动同步[Github Actions](https://github.com/jing332/xmly-downloader-qt5/actions)最新构建产物到坚果云
+自动同步[Actions](https://github.com/jing332/xmly-downloader-qt5/actions)最新构建产物到坚果云，方便国内用户下载。
 
 [win32](https://www.jianguoyun.com/p/DevyI60Q5dvlCBieh7sD) | [linux](https://www.jianguoyun.com/p/DaX_DxwQ5dvlCBjxjbsD) | [macOS](https://www.jianguoyun.com/p/DYp_qTkQ5dvlCBiOjrsD)
 
