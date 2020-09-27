@@ -16,15 +16,15 @@
 
 喜马拉雅FM专辑下载器. 使用Go+Qt5编写(非Qt Binding).
 
-**所下载音频版权归[喜马拉雅FM](https://www.ximalaya.com)所有。严禁商业用途！**
+**所下载音频版权归[喜马拉雅FM](https://www.ximalaya.com)所有，严禁商业用途！**
 
-## 喜马拉雅已开始封禁账号！请酌情使用本工具！
+## 喜马拉雅已开始封禁账号，请酌情使用本工具！否则后果自负！
 
 > 注意: 因喜马拉雅PC付费接口限制，现在每个账号单日只能下载250条VIP、试听、付费音频！
 
 > 本项目的目的在于学习Go+Qt在跨平台的GUI应用，如需进行其他用途使用，请遵照许可协议Fork，使用本软件所造成的一切后果与本人无关。
 
-> Golang API: https://github.com/jing332/xmlydownloader
+> Core/API(Golang): https://github.com/jing332/xmlydownloader
 
 # Screenshots
 <details>
@@ -57,7 +57,7 @@
 `Qt 5.12+`  
 `Go 1.14+`
 
-1. 将 `Qt安装目录\Qt版本号\mingwXX_64\bin` 加入到系统PATH变量, 使用命令 `gcc -v` 测试是否生效.  
+1. (Windows)将 `Qt安装目录\Qt版本号\mingwXX_64\bin` 加入到系统PATH变量, 使用命令 `gcc -v` 测试是否生效.  
 2. 使用命令 `git clone https://github.com/jing332/xmly-downloader-qt5` 将项目克隆到本地.  
 3. 进入 `/src/cgoqt` 文件夹, 使用命令 `go build -buildmode=c-archive -o xmlydownloader.a` 生成C静态库.  
 4. 最后, 打开 `Qt Creator` 导入 `/src/xmly-downloader-qt5.pro` 即可编译运行.  
