@@ -17,12 +17,15 @@ defaults:
     shell: pwsh
 
 jobs:
-   Upload:
+   upload:
+     name: Upload
      runs-on: ubuntu-latest
      needs: build 
      
      steps:
-      - uses: actions/checkout@v2.1.0
+      - uses: actions/checkout@v2
+        with:
+          repository: jing332/plz-download
       - uses: actions/setup-node@v2.1.1
         with: 
           node-version: v14.3.0 
@@ -34,9 +37,6 @@ jobs:
        
       - name: Upload to WebDAV
         run: |
-          git clone https://github.com/ame-yu/plz-download.git
-          cd plz-download
-          mv ../download ./
           npm i
           npm start
         env:
@@ -98,7 +98,7 @@ jobs:
             echo "::add-path::${{ github.workspace }}/opt/libs/bin"
           }
           
-      - name: Install libs
+      - name: Install Libs
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
@@ -107,7 +107,7 @@ jobs:
           sudo apt-get install libx11-xcb-dev
           sudo apt-get install libxkbcommon-x11-dev
 
-      - name: Initiate environment
+      - name: Init Environment
         run: |
           echo "::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}"
           if ("${{ runner.os }}" -eq "windows") {
@@ -126,7 +126,7 @@ jobs:
             bash ./ci/build.sh
           }
           
-      - name: Pack application
+      - name: Pack Application
         run: |
           cd build
           if ("${{ runner.os }}" -eq "Windows") {
@@ -158,7 +158,7 @@ jobs:
           name: xmly-downloader-qt5_linux_${{ github.run_id }}.tar.xz
           path: ./build/xmly-downloader-qt5_linux.tar.xz
           
-      - name: Upload macOS Artifact
+      - name: Upload MacOS Artifact
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v2.1.4
         with:
