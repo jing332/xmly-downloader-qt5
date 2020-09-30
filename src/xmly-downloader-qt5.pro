@@ -36,11 +36,13 @@ SOURCES += \
     runnables/getqrcoderunnable.cpp \
     runnables/getuserinforunnable.cpp \
     runnables/getvipaudioinforunnable.cpp \
+    runnables/downloadchargetrackrunnable.cpp \
     ui/cookieinputdialog.cpp \
     ui/downloadqueuedialog.cpp \
     ui/downloadtaskitemwidget.cpp \
     ui/mainwindow.cpp \
-    ui/qrcodedialog.cpp
+    ui/qrcodedialog.cpp \
+    utils.cpp
 
 HEADERS += \
   appsettings.h \
@@ -55,11 +57,13 @@ HEADERS += \
   runnables/getqrcoderunnable.h \
   runnables/getuserinforunnable.h \
   runnables/getvipaudioinforunnable.h \
+  runnables/downloadchargetrackrunnable.h \
   ui/cookieinputdialog.h \
   ui/downloadqueuedialog.h \
   ui/downloadtaskitemwidget.h \
   ui/mainwindow.h \
-  ui/qrcodedialog.h
+  ui/qrcodedialog.h \
+  utils.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

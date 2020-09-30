@@ -17,6 +17,7 @@
 #include "runnables/getalbuminforunnable.h"
 #include "runnables/getaudioinforunnable.h"
 #include "ui_mainwindow.h"
+#include "utils.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -108,17 +109,6 @@ void MainWindow::SetStyleSheet(const QString &filePath) {
   f.close();
 }
 
-/*获取int的位数*/
-int MainWindow::GetIntWidth(int n) {
-  int count = 0;
-  while (n != 0) {
-    n = n / 10;
-    count++;
-  }
-
-  return count;
-}
-
 /*读取应用配置文件*/
 void MainWindow::ApplySettings() {
   if (!appSettings_->cookie().isEmpty()) {
@@ -190,13 +180,14 @@ void MainWindow::on_unselectBtn_clicked() {
   ui_->selectAllBtn->setFocus();
 }
 
+bool firstDownload = true;
 /*开始下载按钮的点击事件*/
 void MainWindow::on_startDownloadBtn_clicked() {
   DownloadQueueDialog dlQueueDialog(appSettings_->cookie(), this);
   dlQueueDialog.InitValue(ui_->maxTaskCountSpinBox->value(),
                           appSettings_->downloadDir() + "/" + albumName_,
                           extName, isAddNum,
-                          GetIntWidth(audioList_.size() + 1));
+                          Utils::GetIntWidth(audioList_.size() + 1));
   for (auto &index : ui_->tableWidget->selectionModel()->selectedRows(0)) {
     dlQueueDialog.AddDownloadTask(index.row() + 1, audioList_.at(index.row()));
   }
@@ -204,6 +195,7 @@ void MainWindow::on_startDownloadBtn_clicked() {
   if (QDialog::Accepted == dlQueueDialog.exec()) {
     ui_->statusbar->showMessage("下载完成！");
   };
+  firstDownload = false;
 }
 
 /*表格的右键菜单*/

@@ -29,7 +29,6 @@ class MainWindow : public QMainWindow {
 
  private:
   void SetStyleSheet(const QString &filePath);
-  int GetIntWidth(int n);
 
  private slots:
   void on_selectDirBtn_clicked();
@@ -69,6 +68,8 @@ class MainWindow : public QMainWindow {
   QString albumName_;
   /*文件后缀名*/
   QString extName = QStringLiteral("m4a");
+  /*jvm.[dll/so/dylib]目录*/
+  QString jvmDlPath_;
   /*特殊字符的正则表达式*/
   QRegularExpression fileNameReg_ = QRegularExpression("[/\\:*?\"<>|]");
 };

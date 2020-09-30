@@ -5,9 +5,8 @@
 #include <QMessageBox>
 
 #include "appevent.h"
+#include "runnables/downloadchargetrackrunnable.h"
 #include "runnables/downloadfilerunnable.h"
-#include "runnables/downloadvipfilerunnable.h"
-#include "runnables/getvipaudioinforunnable.h"
 #include "ui/mainwindow.h"
 
 DownloadQueueDialog::DownloadQueueDialog(const QString &cookie, QWidget *parent)
@@ -87,16 +86,17 @@ void DownloadQueueDialog::DownloadFile(DownloadItemData *data) {
 /*下载VIP文件*/
 void DownloadQueueDialog::DownloadVipFile(int trackID, const QString &cookie,
                                           DownloadItemData *data) {
-  auto runnable = new GetVipAudioInfoRunnable(trackID, cookie, data);
-  connect(runnable, &GetVipAudioInfoRunnable::Start, this,
+  auto runnable = new DownloadChargeTrackRunnable(trackID, cookie, data);
+  connect(runnable, &DownloadChargeTrackRunnable::GetInfoStart, this,
           [&](int trackID, int number) {
-            Q_UNUSED(trackID);
             auto itemWidget = GetDownloadingItemWidget(number);
             itemWidget->setProgressBarVisible(true);
             itemWidget->SetStatus("获取下载地址...");
           });
-  connect(runnable, &GetVipAudioInfoRunnable::Failed, this,
-          [&](int trackID, QString err, DownloadItemData *data) {
+  connect(runnable, &DownloadChargeTrackRunnable::GetInfoSucceed, this,
+          [&](int trackID, int number) { OnDownloadStart(number); });
+  connect(runnable, &DownloadChargeTrackRunnable::GetInfoFailed, this,
+          [&](int trackID, const QString &err, DownloadItemData *data) {
             qWarning() << err;
             AddDownloadFailedItemWidget(data, "无法获取下载地址: " + err);
 
@@ -106,11 +106,12 @@ void DownloadQueueDialog::DownloadVipFile(int trackID, const QString &cookie,
 
             SetDownloadFailedCount(downloadFailedCount_ + 1);
           });
-
-  connect(runnable, &GetVipAudioInfoRunnable::Finished, this,
-          [&](AudioInfo *ai, DownloadItemData *data) {
-            data->setUri(ai->m4aURL64());
-            DownloadFile(data);
+  connect(
+      runnable, &DownloadChargeTrackRunnable::DownloadSucceed, this,
+      [&](int trackID, int number) { OnDownloadFinished(number, QString()); });
+  connect(runnable, &DownloadChargeTrackRunnable::DownloadFailed, this,
+          [&](int trackID, int number, QString err) {
+            OnDownloadFinished(number, err);
           });
   pool_->start(runnable);
 }
