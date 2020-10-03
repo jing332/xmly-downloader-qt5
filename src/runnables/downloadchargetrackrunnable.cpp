@@ -9,6 +9,8 @@ DownloadChargeTrackRunnable::DownloadChargeTrackRunnable(
 void DownloadChargeTrackRunnable::run() {
   emit GetInfoStart(trackID_, dlItemData_->number());
   auto ai = GetChargeTrackInfo(trackID_);
+  if (!ai) return;
+
   emit GetInfoSucceed(trackID_, dlItemData_->number());
 
   QString filepath = dlItemData_->saveDir() + "/" + dlItemData_->name();
