@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>喜马拉雅有声小说批量下载器(此工具仅为学习交流使用, 音频版权归喜马拉雅FM所有.)</string>
+   <string>喜马拉雅FM专辑下载器(此工具仅为学习交流使用, 音频版权归喜马拉雅FM所有!)</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../resources/xmly-downloader-qt5.qrc">
@@ -48,7 +48,7 @@
          </size>
         </property>
         <property name="text">
-         <string>有声小说ID: </string>
+         <string>专辑ID: </string>
         </property>
        </widget>
       </item>
@@ -94,7 +94,7 @@
       <item>
        <widget class="QPushButton" name="cookieBtn">
         <property name="text">
-         <string>未设置Cookie</string>
+         <string>未登陆</string>
         </property>
        </widget>
       </item>
