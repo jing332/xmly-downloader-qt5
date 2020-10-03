@@ -112,7 +112,7 @@ void MainWindow::SetStyleSheet(const QString &filePath) {
 /*读取应用配置文件*/
 void MainWindow::ApplySettings() {
   if (!appSettings_->cookie().isEmpty()) {
-    ui_->cookieBtn->setText("已设置Cookie");
+    ui_->cookieBtn->setText("已登陆");
   }
 
   int albumID = appSettings_->albumID();
@@ -323,11 +323,11 @@ void MainWindow::on_cookieBtn_clicked() {
   if (QDialog::Accepted == inputDlg.exec()) {
     auto cookie = inputDlg.GetCookie();
     if (cookie.isEmpty()) {
-      ui_->cookieBtn->setText("未设置Cookie");
+      ui_->cookieBtn->setText("未登陆");
       ui_->cookieBtn->setToolTip("");
       appSettings_->setCookie("");
     } else {
-      ui_->cookieBtn->setText("已设置Cookie");
+      ui_->cookieBtn->setText("已登陆");
       ui_->cookieBtn->setToolTip(cookie);
       appSettings_->setCookie(cookie);
     }
