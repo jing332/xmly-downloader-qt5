@@ -14,6 +14,7 @@
 #include <QTextEdit>
 
 #include "cookieinputdialog.h"
+#include "getdownloadurldialog.h"
 #include "runnables/getalbuminforunnable.h"
 #include "runnables/getaudioinforunnable.h"
 #include "ui_mainwindow.h"
@@ -27,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   qRegisterMetaType<QList<AudioInfo *>>("QList<AudioInfo*>");
   qRegisterMetaType<QVector<int>>("QVector<int>");
+  qRegisterMetaType<AudioInfo>("AudioInfo");
 
   timer_ = new QTimer(this);
   pool_ = new QThreadPool(this);
@@ -133,6 +135,11 @@ void MainWindow::Timeout() {
   ui_->startDownloadBtn->setEnabled(true);
 }
 
+/*倒序勾选框状态更改事件*/
+void MainWindow::on_descCheckBox_stateChanged(int state) {
+  isAsc_ = !ui_->descCheckBox->isChecked();
+}
+
 /*选择目录按钮的点击事件*/
 void MainWindow::on_selectDirBtn_clicked() {
   auto dir = QFileDialog::getExistingDirectory(this);
@@ -201,15 +208,30 @@ void MainWindow::on_startDownloadBtn_clicked() {
 /*表格的右键菜单*/
 void MainWindow::on_tableWidget_customContextMenuRequested(const QPoint &pos) {
   QMenu menu;
-  QAction action("复制", this);
-
-  connect(&action, &QAction::triggered, this, [&]() {
+  QAction copyTextaction("复制文本", this);
+  QAction getUrlAction("获取下载地址", this);
+  connect(&copyTextaction, &QAction::triggered, this, [&]() {
     auto item = ui_->tableWidget->itemAt(pos);
     if (item) {
       qApp->clipboard()->setText(item->text());
     }
   });
-  menu.addAction(&action);
+  connect(&getUrlAction, &QAction::triggered, this, [&]() {
+    auto item = ui_->tableWidget->itemAt(pos);
+    if (item) {
+      int row = item->row();
+      if (-1 != row) {
+        auto ai = audioList_.at(row);
+        if (ai->isEmptyURL()) {
+          auto *dlg = new GetDownloadUrlDialog(ai->trackID(),
+                                               appSettings_->cookie(), this);
+          dlg->exec();
+        }
+      }
+    }
+  });
+  menu.addAction(&copyTextaction);
+  menu.addAction(&getUrlAction);
   menu.exec(QCursor::pos());
 }
 
@@ -234,12 +256,12 @@ void MainWindow::OnGetAlbumInfoFinished(int albumID, AlbumInfo *ai) {
   ui_->titleLabel->setText(text);
   albumName_ = QString(ai->title).replace(fileNameReg_, " ");
 
-  auto runnable = new GetAudioInfoRunnable(albumID, 1);
+  auto runnable = new GetAudioInfoRunnable(albumID, 1, isAsc_);
   connect(runnable, &GetAudioInfoRunnable::Succeed, this,
           [&](int albumID, int maxPageID, const QList<AudioInfo *> &list) {
             AddAudioInfoItem(list);
             for (int i = 2; i <= maxPageID; i++) {
-              auto run = new GetAudioInfoRunnable(albumID, i);
+              auto run = new GetAudioInfoRunnable(albumID, i, isAsc_);
               connect(run, &GetAudioInfoRunnable::Succeed, this,
                       [&](int albumID, int maxPageID,
                           const QList<AudioInfo *> &list) {

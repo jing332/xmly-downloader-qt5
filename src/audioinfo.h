@@ -6,6 +6,7 @@
 class AudioInfo : public QObject {
   Q_OBJECT
  public:
+  AudioInfo(const AudioInfo &ai);
   explicit AudioInfo(QObject *parent = nullptr);
   AudioInfo(int trackID, const QString &title, const QString &mp3URL32,
             const QString &mp3URL64, const QString &m4aURL24,
@@ -39,7 +40,5 @@ class AudioInfo : public QObject {
   QString m4aURL24_;
   QString m4aURL64_;
 };
-
-// Q_DECLARE_METATYPE(AudioInfo);
 
 #endif  // AUDIOINFO_H

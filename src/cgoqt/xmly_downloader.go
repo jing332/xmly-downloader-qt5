@@ -41,15 +41,19 @@ func CgoGetAlbumInfo(albumID C.int) *C.DataError {
 	return C.newData(unsafe.Pointer(pAlbumInfo))
 }
 
-//export CgoGetAudioInfoListByPageID
-func CgoGetAudioInfoListByPageID(albumID, pageID C.int) *C.DataError {
-	playlist, err := xmly.GetAudioInfoListByPageID(int(albumID), int(pageID))
+//export CgoGetTrackList
+func CgoGetTrackList(albumID, pageID, isAsc C.int) *C.DataError {
+	b := false
+	if int(isAsc) != 0 {
+		b = true
+	}
+	tracks, err := xmly.GetTrackList(int(albumID), int(pageID), b)
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
 
-	ptrArray := C.newPointerArray(C.int(len(playlist.List)))
-	for i, v := range playlist.List {
+	ptrArray := C.newPointerArray(C.int(len(tracks.Data.List)))
+	for i, v := range tracks.Data.List {
 		v.Title = fileNameRegexp.ReplaceAllLiteralString(v.Title, " ")
 		v.Title = strings.ReplaceAll(v.Title, "\t", "")
 		v.Title = strings.TrimSpace(v.Title)
@@ -57,8 +61,8 @@ func CgoGetAudioInfoListByPageID(albumID, pageID C.int) *C.DataError {
 			C.CString(v.PlayURL32), C.CString(v.PlayURL64), C.CString(v.PlayPathAacv224), C.CString(v.PlayPathAacv164)))
 	}
 
-	cArray := C.newCArray(ptrArray, C.int(len(playlist.List)))
-	cPlaylist := C.newPlaylist(C.int(playlist.MaxPageID), unsafe.Pointer(cArray))
+	cArray := C.newCArray(ptrArray, C.int(len(tracks.Data.List)))
+	cPlaylist := C.newTrackList(C.int(tracks.Data.MaxPageID), unsafe.Pointer(cArray))
 	return C.newData(unsafe.Pointer(cPlaylist))
 }
 

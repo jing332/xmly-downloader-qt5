@@ -1,5 +1,13 @@
 #include "audioinfo.h"
 
+AudioInfo::AudioInfo(const AudioInfo &ai)
+    : trackID_(ai.trackID_),
+      title_(ai.title_),
+      mp3URL32_(ai.mp3URL32_),
+      mp3URL64_(ai.mp3URL64_),
+      m4aURL24_(ai.m4aURL24_),
+      m4aURL64_(ai.m4aURL64_) {}
+
 AudioInfo::AudioInfo(QObject *parent) : QObject(parent) {}
 
 AudioInfo::AudioInfo(int trackID, const QString &title, const QString &mp3URL32,

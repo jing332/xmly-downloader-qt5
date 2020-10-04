@@ -10,7 +10,7 @@
 class GetAudioInfoRunnable : public QObject, public QRunnable {
   Q_OBJECT
  public:
-  GetAudioInfoRunnable(int albumID, int pageID);
+  GetAudioInfoRunnable(int albumID, int pageID, bool isAsc);
 
  protected:
   void run() override;
@@ -22,6 +22,7 @@ class GetAudioInfoRunnable : public QObject, public QRunnable {
  private:
   int albumID_;
   int pageID_;
+  bool isAsc_;
 };
 
 #endif  // GETAUDIOINFORUNNABLE_H

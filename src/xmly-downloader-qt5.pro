@@ -35,11 +35,12 @@ SOURCES += \
     runnables/getaudioinforunnable.cpp \
     runnables/getqrcoderunnable.cpp \
     runnables/getuserinforunnable.cpp \
-    runnables/getvipaudioinforunnable.cpp \
+    runnables/getchargetrackinforunnable.cpp \
     runnables/downloadchargetrackrunnable.cpp \
     ui/cookieinputdialog.cpp \
     ui/downloadqueuedialog.cpp \
     ui/downloadtaskitemwidget.cpp \
+    ui/getdownloadurldialog.cpp \
     ui/mainwindow.cpp \
     ui/qrcodedialog.cpp \
     utils.cpp
@@ -56,11 +57,12 @@ HEADERS += \
   runnables/getaudioinforunnable.h \
   runnables/getqrcoderunnable.h \
   runnables/getuserinforunnable.h \
-  runnables/getvipaudioinforunnable.h \
+  runnables/getchargetrackinforunnable.h \
   runnables/downloadchargetrackrunnable.h \
   ui/cookieinputdialog.h \
   ui/downloadqueuedialog.h \
   ui/downloadtaskitemwidget.h \
+  ui/getdownloadurldialog.h \
   ui/mainwindow.h \
   ui/qrcodedialog.h \
   utils.h
@@ -73,6 +75,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 FORMS += \
   ui/cookieinputdialog.ui \
   ui/downloadqueuedialog.ui \
+  ui/getdownloadurldialog.ui \
   ui/mainwindow.ui \
   ui/qrcodedialog.ui
 

@@ -2,17 +2,18 @@
 
 #include <QDebug>
 
-GetAudioInfoRunnable::GetAudioInfoRunnable(int albumID, int pageID)
-    : albumID_(albumID), pageID_(pageID) {}
+GetAudioInfoRunnable::GetAudioInfoRunnable(int albumID, int pageID, bool isAsc)
+    : albumID_(albumID), pageID_(pageID), isAsc_(isAsc) {}
 
 void GetAudioInfoRunnable::run() {
-  auto data = CgoGetAudioInfoListByPageID(albumID_, pageID_);
+  qDebug() << isAsc_;
+  auto data = CgoGetTrackList(albumID_, pageID_, int(isAsc_));
   if (data->error) {
     qWarning() << data->error;
     emit Failed(albumID_, QString(data->error));
   } else {
     QList<AudioInfo *> aiList;
-    auto playlist = static_cast<CgoPlaylist *>(data->data);
+    auto playlist = static_cast<CgoTrackList *>(data->data);
     auto list = static_cast<CArray *>(playlist->list);
     for (int i = 0; i < list->length; i++) {
       auto cgo =

@@ -34,7 +34,7 @@ typedef struct {
 typedef struct {
  int maxPageID;
  void* list;
-} CgoPlaylist;
+} CgoTrackList;
 
 typedef struct {
   int ret;
@@ -85,9 +85,9 @@ static inline void* newAudioItem(int id, char* title, char* mp3URL32,
   return p;
 }
 
-static inline void* newPlaylist(int maxPageID, void* list){
-  CgoPlaylist *p = (CgoPlaylist*)malloc(sizeof (CgoPlaylist));
-  memset(p, 0, sizeof (CgoPlaylist));
+static inline void* newTrackList(int maxPageID, void* list){
+  CgoTrackList *p = (CgoTrackList*)malloc(sizeof (CgoTrackList));
+  memset(p, 0, sizeof (CgoTrackList));
   p->maxPageID = maxPageID;
   p->list = list;
   return p;

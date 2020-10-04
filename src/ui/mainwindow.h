@@ -31,6 +31,7 @@ class MainWindow : public QMainWindow {
   void SetStyleSheet(const QString &filePath);
 
  private slots:
+  void on_descCheckBox_stateChanged(int arg1);
   void on_selectDirBtn_clicked();
   void on_parseBtn_clicked();
   void on_selectAllBtn_clicked();
@@ -62,6 +63,8 @@ class MainWindow : public QMainWindow {
 
   AppSettings *appSettings_;
 
+  /*是否升序*/
+  bool isAsc_ = true;
   /*是否在文件名前添加序号*/
   bool isAddNum = false;
   /*专辑名称*/
