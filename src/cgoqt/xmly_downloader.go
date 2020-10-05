@@ -115,7 +115,7 @@ func CgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 		}
 	}
 
-	resp, err = xmly.HttpGet(url, xmly.Android)
+	resp, err = xmly.HttpGet(url, xmly.PC)
 	if err != nil {
 		return C.CString(fmt.Sprintf("download %s fail: %s", url, err.Error()))
 	}
