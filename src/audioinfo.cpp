@@ -48,3 +48,10 @@ bool AudioInfo::isEmptyURL() {
   return m4aURL24_.isEmpty() && m4aURL64_.isEmpty() && mp3URL32_.isEmpty() &&
          mp3URL64_.isEmpty();
 }
+
+void AudioInfo::ClearAllURL() {
+  mp3URL32_.clear();
+  mp3URL64_.clear();
+  m4aURL24_.clear();
+  m4aURL64_.clear();
+}

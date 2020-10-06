@@ -32,12 +32,17 @@ func CgoRegisterCallback(callback C.UpdateFileLengthCallback) {
 
 //export CgoGetAlbumInfo
 func CgoGetAlbumInfo(albumID C.int) *C.DataError {
-	title, audioCount, pageCount, err := xmly.GetAlbumInfo(int(albumID))
+	ai, err := xmly.GetAlbumInfo(int(albumID))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
 
-	pAlbumInfo := C.newAlbumInfo(C.CString(title), C.int(audioCount), C.int(pageCount))
+	var freeTrackIDs *C.char = nil
+	if len(ai.Data.Album.PriceTypes) >= 0 {
+		freeTrackIDs = C.CString(ai.Data.Album.PriceTypes[0].FreeTrackIds)
+	}
+	pAlbumInfo := C.newAlbumInfo(C.CString(ai.Data.Album.Title), C.int(ai.Data.Album.TrackCount),
+		C.int(ai.AlbumType()), freeTrackIDs)
 	return C.newData(unsafe.Pointer(pAlbumInfo))
 }
 

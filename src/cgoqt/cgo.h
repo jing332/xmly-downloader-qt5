@@ -17,8 +17,9 @@ typedef struct {
 
 typedef struct {
   char* title;
-  int audioCount;
-  int pageCount;
+  int trackCount;
+  int type;
+  char* freeTrackIDs;
 } AlbumInfo;
 
 typedef struct {
@@ -60,13 +61,14 @@ static void UpdateFileLength(UpdateFileLengthCallback callback, int trackID,
   callback(trackID, contentLength, currentLength);
 }
 
-static inline AlbumInfo* newAlbumInfo(char* title, int audioCount,
-                                      int pageCount) {
+static inline AlbumInfo* newAlbumInfo(char* title, int trackCount,
+                                      int type, char* freeTrackIDs) {
   AlbumInfo* p = (AlbumInfo*)malloc(sizeof(AlbumInfo));
   memset(p, 0, sizeof(AlbumInfo));
   p->title = title;
-  p->audioCount = audioCount;
-  p->pageCount = pageCount;
+  p->trackCount = trackCount;
+  p->type = type;
+  p->freeTrackIDs = freeTrackIDs;
   return p;
 }
 

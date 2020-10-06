@@ -63,6 +63,8 @@ class MainWindow : public QMainWindow {
 
   AppSettings *appSettings_;
 
+  /*专辑类型(1: 免费, 2: VIP, 3: 付费)*/
+  int albumType;
   /*是否升序*/
   bool isAsc_ = true;
   /*是否在文件名前添加序号*/

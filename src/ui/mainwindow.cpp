@@ -57,8 +57,8 @@ MainWindow::MainWindow(QWidget *parent)
             }
           });
   connect(ui_->statusbar, &QStatusBar::customContextMenuRequested, this, [&]() {
-    QMenu menu;
-    QAction action("复制", this);
+    QMenu menu(this);
+    QAction action("复制文本", this);
     connect(&action, &QAction::triggered, this, [&]() {
       qDebug() << "copy statusBar message:" << ui_->statusbar->currentMessage();
       qApp->clipboard()->setText(ui_->statusbar->currentMessage());
@@ -207,7 +207,7 @@ void MainWindow::on_startDownloadBtn_clicked() {
 
 /*表格的右键菜单*/
 void MainWindow::on_tableWidget_customContextMenuRequested(const QPoint &pos) {
-  QMenu menu;
+  QMenu menu(this);
   QAction copyTextaction("复制文本", this);
   QAction getUrlAction("获取下载地址", this);
   connect(&copyTextaction, &QAction::triggered, this, [&]() {
@@ -245,12 +245,26 @@ void MainWindow::on_m4aRadioBtn_clicked() { extName = QStringLiteral("m4a"); }
 
 /*获取专辑信息成功*/
 void MainWindow::OnGetAlbumInfoFinished(int albumID, AlbumInfo *ai) {
+  albumType = ai->type;
+  QString strAlbumType;
+  switch (ai->type) {
+    case 1:
+      strAlbumType = "免费";
+      break;
+    case 2:
+      strAlbumType = "VIP";
+      break;
+    case 3:
+      strAlbumType = "付费";
+  }
   auto text =
       QStringLiteral(
-          "专辑名称: <a href='%3'><span style='text-decoration: underline; "
-          "color:black;'>%1</span></a>\t音频数量: <b>%2</b>")
+          "专辑名称: <a href='%4'><span style='text-decoration: underline; "
+          "color:black;'>%1</span></a>\t音频数量: <b>%2</b>, 专辑类型: "
+          "<b>%3</b>")
           .arg(ai->title)
-          .arg(ai->audioCount)
+          .arg(ai->trackCount)
+          .arg(strAlbumType)
           .arg(QStringLiteral("https://www.ximalaya.com/youshengshu/")
                    .append(QString::number(albumID)));
   ui_->titleLabel->setText(text);
@@ -290,7 +304,6 @@ void MainWindow::AddAudioInfoItem(const QList<AudioInfo *> &list) {
   timer_->start(1000);
   for (auto &ai : list) {
     ui_->statusbar->showMessage(ai->title(), 2000);
-    audioList_.append(ai);
 
     int rowCount = ui_->tableWidget->rowCount();
     ui_->tableWidget->insertRow(rowCount);
@@ -299,6 +312,10 @@ void MainWindow::AddAudioInfoItem(const QList<AudioInfo *> &list) {
     ui_->tableWidget->setItem(
         rowCount, 1, new QTableWidgetItem(QString::number(ai->trackID())));
 
+    if (albumType != 1) {
+      ai->ClearAllURL(); /*因试听音频的静态URL是无效的，所以需要删掉以调用付费音频接口*/
+    }
+
     if ("mp3" == extName) {
       ui_->tableWidget->setItem(rowCount, 2,
                                 new QTableWidgetItem(ai->mp3URL64()));
@@ -306,6 +323,7 @@ void MainWindow::AddAudioInfoItem(const QList<AudioInfo *> &list) {
       ui_->tableWidget->setItem(rowCount, 2,
                                 new QTableWidgetItem(ai->m4aURL64()));
     }
+    audioList_.append(ai);
   }
 }
 

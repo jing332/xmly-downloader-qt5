@@ -31,6 +31,7 @@ class AudioInfo : public QObject {
   void setM4aURL64(const QString &m4aURL64);
 
   bool isEmptyURL();
+  void ClearAllURL();
 
  private:
   int trackID_;

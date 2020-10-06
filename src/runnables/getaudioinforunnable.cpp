@@ -6,7 +6,6 @@ GetAudioInfoRunnable::GetAudioInfoRunnable(int albumID, int pageID, bool isAsc)
     : albumID_(albumID), pageID_(pageID), isAsc_(isAsc) {}
 
 void GetAudioInfoRunnable::run() {
-  qDebug() << isAsc_;
   auto data = CgoGetTrackList(albumID_, pageID_, int(isAsc_));
   if (data->error) {
     qWarning() << data->error;
