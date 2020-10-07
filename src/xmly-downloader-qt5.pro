@@ -46,6 +46,7 @@ SOURCES += \
     utils.cpp
 
 HEADERS += \
+  albumtype.h \
   appsettings.h \
   audioinfo.h \
   downloaditemdata.h \

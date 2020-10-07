@@ -5,14 +5,10 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QInputDialog>
 #include <QMenu>
 #include <QMessageBox>
-#include <QMetaType>
-#include <QMouseEvent>
-#include <QScrollBar>
-#include <QTextEdit>
 
+#include "albumtype.h"
 #include "cookieinputdialog.h"
 #include "getdownloadurldialog.h"
 #include "runnables/getalbuminforunnable.h"
@@ -246,17 +242,6 @@ void MainWindow::on_m4aRadioBtn_clicked() { extName = QStringLiteral("m4a"); }
 /*获取专辑信息成功*/
 void MainWindow::OnGetAlbumInfoFinished(int albumID, AlbumInfo *ai) {
   albumType = ai->type;
-  QString strAlbumType;
-  switch (ai->type) {
-    case 1:
-      strAlbumType = "免费";
-      break;
-    case 2:
-      strAlbumType = "VIP";
-      break;
-    case 3:
-      strAlbumType = "付费";
-  }
   auto text =
       QStringLiteral(
           "专辑名称: <a href='%4'><span style='text-decoration: underline; "
@@ -264,7 +249,7 @@ void MainWindow::OnGetAlbumInfoFinished(int albumID, AlbumInfo *ai) {
           "<b>%3</b>")
           .arg(ai->title)
           .arg(ai->trackCount)
-          .arg(strAlbumType)
+          .arg(AlbumType::ToString(ai->type))
           .arg(QStringLiteral("https://www.ximalaya.com/youshengshu/")
                    .append(QString::number(albumID)));
   ui_->titleLabel->setText(text);
