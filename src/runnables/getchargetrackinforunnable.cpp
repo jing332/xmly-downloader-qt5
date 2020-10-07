@@ -15,9 +15,9 @@ void GetChargeTrackInfoRunnable::run() {
     return;
   }
 
-  auto cgo = static_cast<CgoAudioInfo *>(dataErr->data);
-  AudioInfo ai(cgo->id, cgo->title, cgo->mp3URL32, cgo->mp3URL64, cgo->m4aURL24,
-               cgo->m4aURL64);
+  auto cgo = static_cast<CgoTrackInfo *>(dataErr->data);
+  TrackInfo ai(cgo->id, cgo->title, cgo->duration, cgo->mp3URL32, cgo->mp3URL64,
+               cgo->m4aURL24, cgo->m4aURL64);
   emit Succeed(ai);
   delete cgo;
   delete dataErr;

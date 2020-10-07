@@ -5,10 +5,9 @@
 #include <QMap>
 #include <QThreadPool>
 
-#include "audioinfo.h"
-#include "cgoqt/cgo.h"
 #include "downloaditemdata.h"
 #include "downloadtaskitemwidget.h"
+#include "trackinfo.h"
 #include "ui_downloadqueuedialog.h"
 
 namespace Ui {
@@ -26,7 +25,7 @@ class DownloadQueueDialog : public QDialog {
 
   void InitValue(int maxTaskCount, const QString &downloadDir,
                  const QString suffixName, bool isAddNum, int numWidth);
-  void AddDownloadTask(int number, AudioInfo *ai);
+  void AddDownloadTask(int number, TrackInfo *ai);
   bool HasTask();
 
  protected:

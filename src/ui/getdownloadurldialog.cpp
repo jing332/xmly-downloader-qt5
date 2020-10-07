@@ -13,7 +13,7 @@ GetDownloadUrlDialog::GetDownloadUrlDialog(int trackID, const QString &cookie,
 
   auto runnable = new GetChargeTrackInfoRunnable(trackID, cookie);
   connect(runnable, &GetChargeTrackInfoRunnable::Succeed, this,
-          [&](const AudioInfo ai) {
+          [&](const TrackInfo ai) {
             ui_->tipLabel->setText("");
             ui_->fileNameLineEdit->setText(ai.title());
             ui_->fileNameLineEdit->home(false);

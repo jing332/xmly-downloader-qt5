@@ -44,7 +44,7 @@ void DownloadQueueDialog::InitValue(int maxTaskCount,
   pool_->setMaxThreadCount(maxTaskCount);
 }
 
-void DownloadQueueDialog::AddDownloadTask(int number, AudioInfo *ai) {
+void DownloadQueueDialog::AddDownloadTask(int number, TrackInfo *ai) {
   auto data = new DownloadItemData(this);
   data->setNumber(number);
   data->setName(ai->title() + "." + extName_);
@@ -117,7 +117,7 @@ void DownloadQueueDialog::DownloadVipFile(int trackID, const QString &cookie,
 }
 
 void DownloadQueueDialog::AddDownloadingItemWidget(DownloadItemData *data) {
-  auto ai = data->property("ai").value<AudioInfo *>();
+  auto ai = data->property("ai").value<TrackInfo *>();
   auto itemWidget = new DownloadTaskItemWidget(ai->title() + "." + extName_);
   itemWidget->setProperty("data", QVariant::fromValue(data));
   auto item = new QListWidgetItem(ui_->downloadingListWidget);
@@ -271,7 +271,7 @@ void DownloadQueueDialog::on_retryBtn_clicked() {
     int count = ui_->downloadFailedListWidget->selectedItems().size();
     for (auto &selectedItem : ui_->downloadFailedListWidget->selectedItems()) {
       auto data = selectedItem->data(Qt::UserRole).value<DownloadItemData *>();
-      auto ai = data->property("ai").value<AudioInfo *>();
+      auto ai = data->property("ai").value<TrackInfo *>();
       AddDownloadTask(data->number(), ai);
       ui_->downloadFailedListWidget->takeItem(
           ui_->downloadFailedListWidget->row(selectedItem));

@@ -28,7 +28,7 @@ void DownloadChargeTrackRunnable::run() {
     emit DownloadSucceed(trackID_, dlItemData_->number());
 }
 
-AudioInfo *DownloadChargeTrackRunnable::GetChargeTrackInfo(int trackID) {
+TrackInfo *DownloadChargeTrackRunnable::GetChargeTrackInfo(int trackID) {
   auto dataErr = CgoGetVipAudioInfo(
       trackID_, const_cast<char *>(cookie_.toStdString().c_str()));
 
@@ -38,9 +38,9 @@ AudioInfo *DownloadChargeTrackRunnable::GetChargeTrackInfo(int trackID) {
     return nullptr;
   }
 
-  auto cgo = static_cast<CgoAudioInfo *>(dataErr->data);
-  auto ai = new AudioInfo(cgo->id, cgo->title, cgo->mp3URL32, cgo->mp3URL64,
-                          cgo->m4aURL24, cgo->m4aURL64);
+  auto cgo = static_cast<CgoTrackInfo *>(dataErr->data);
+  auto ai = new TrackInfo(cgo->id, cgo->title, cgo->duration, cgo->mp3URL32,
+                          cgo->mp3URL64, cgo->m4aURL24, cgo->m4aURL64);
   //  emit Finished(ai, dlItemData_);
   delete cgo;
   delete dataErr;

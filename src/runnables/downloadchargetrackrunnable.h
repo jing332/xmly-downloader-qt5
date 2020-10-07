@@ -4,8 +4,8 @@
 #include <QObject>
 #include <QRunnable>
 
-#include "audioinfo.h"
 #include "downloaditemdata.h"
+#include "trackinfo.h"
 #include "xmlydownloader.h"
 
 class DownloadChargeTrackRunnable : public QObject, public QRunnable {
@@ -18,7 +18,7 @@ class DownloadChargeTrackRunnable : public QObject, public QRunnable {
   void run() override;
 
  private:
-  AudioInfo *GetChargeTrackInfo(int trackID);
+  TrackInfo *GetChargeTrackInfo(int trackID);
  signals:
   void GetInfoStart(int trackID, int number);
   void GetInfoSucceed(int trackID, int number);

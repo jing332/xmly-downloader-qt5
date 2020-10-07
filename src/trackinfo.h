@@ -3,20 +3,23 @@
 
 #include <QObject>
 
-class AudioInfo : public QObject {
+class TrackInfo : public QObject {
   Q_OBJECT
  public:
-  AudioInfo(const AudioInfo &ai);
-  explicit AudioInfo(QObject *parent = nullptr);
-  AudioInfo(int trackID, const QString &title, const QString &mp3URL32,
-            const QString &mp3URL64, const QString &m4aURL24,
-            const QString &m4aURL64);
+  explicit TrackInfo(QObject *parent = nullptr);
+  TrackInfo(const TrackInfo &ai);
+  TrackInfo(int trackID, const QString &title, int duration,
+            const QString &mp3URL32, const QString &mp3URL64,
+            const QString &m4aURL24, const QString &m4aURL64);
 
   int trackID() const;
   void setTrackID(int trackID);
 
   QString title() const;
   void setTitle(const QString &title);
+
+  int duration() const;
+  void setDuration(int duration);
 
   QString mp3URL32() const;
   void setMp3URL32(const QString &mp3URL32);
@@ -36,6 +39,7 @@ class AudioInfo : public QObject {
  private:
   int trackID_;
   QString title_;
+  int duration_;
   QString mp3URL32_;
   QString mp3URL64_;
   QString m4aURL24_;

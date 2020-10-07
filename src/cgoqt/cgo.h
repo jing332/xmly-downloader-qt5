@@ -25,12 +25,12 @@ typedef struct {
 typedef struct {
   int id;
   char* title;
+  int duration;
   char* mp3URL32;
   char* mp3URL64;
   char* m4aURL24;
   char* m4aURL64;
-  char* number;
-} CgoAudioInfo;
+} CgoTrackInfo;
 
 typedef struct {
  int maxPageID;
@@ -40,7 +40,6 @@ typedef struct {
 typedef struct {
   int ret;
   char* msg;
-
   int uid;
   int isVip;
   char* nickName;
@@ -72,18 +71,18 @@ static inline AlbumInfo* newAlbumInfo(char* title, int trackCount,
   return p;
 }
 
-static inline void* newAudioItem(int id, char* title, char* mp3URL32,
+static inline void* newTrackInfo(int id, char* title, int duration, char* mp3URL32,
                                  char* mp3URL64, char* m4aUURL24,
                                  char* m4aURL64) {
-  CgoAudioInfo* p = (CgoAudioInfo*)malloc(sizeof(CgoAudioInfo));
-  memset(p, 0, sizeof(CgoAudioInfo));
+  CgoTrackInfo* p = (CgoTrackInfo*)malloc(sizeof(CgoTrackInfo));
+  memset(p, 0, sizeof(CgoTrackInfo));
   p->id = id;
   p->title = title;
+  p->duration = duration;
   p->mp3URL32 = mp3URL32;
   p->mp3URL64 = mp3URL64;
   p->m4aURL24 = m4aUURL24;
   p->m4aURL64 = m4aURL64;
-  p->number = NULL;
   return p;
 }
 

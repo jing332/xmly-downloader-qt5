@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QRunnable>
 
-#include "audioinfo.h"
+#include "trackinfo.h"
 #include "xmlydownloader.h"
 
 class GetChargeTrackInfoRunnable : public QObject, public QRunnable {
@@ -22,7 +22,7 @@ class GetChargeTrackInfoRunnable : public QObject, public QRunnable {
  signals:
   void Start(int trackID);
   void Failed(int trackID, const QString &err);
-  void Succeed(const AudioInfo ai);
+  void Succeed(const TrackInfo ai);
 };
 
 #endif  // GETVIPAUDIOINFORUNNABLE_H

@@ -50,13 +50,13 @@ class MainWindow : public QMainWindow {
   void OnGetAlbumInfoFailed(const QString &err);
   void OnGetAudioInfoFailed(int albumID, const QString &err);
 
-  void AddAudioInfoItem(const QList<AudioInfo *> &list);
+  void AddAudioInfoItem(const QList<TrackInfo *> &list);
   void Timeout();
 
  private:
   Ui::MainWindow *ui_;
 
-  QList<AudioInfo *> audioList_;
+  QList<TrackInfo *> audioList_;
   QMenu *tableWidgetMenu_;
   QTimer *timer_;
   QThreadPool *pool_;

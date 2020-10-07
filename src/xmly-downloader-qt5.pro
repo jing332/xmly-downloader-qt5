@@ -26,13 +26,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     appsettings.cpp \
-    audioinfo.cpp \
+    trackinfo.cpp \
     downloaditemdata.cpp \
     main.cpp \
     runnables/checkqrcoderunnable.cpp \
     runnables/downloadfilerunnable.cpp \
     runnables/getalbuminforunnable.cpp \
-    runnables/getaudioinforunnable.cpp \
+    runnables/gettrackinforunnable.cpp \
     runnables/getqrcoderunnable.cpp \
     runnables/getuserinforunnable.cpp \
     runnables/getchargetrackinforunnable.cpp \
@@ -48,14 +48,14 @@ SOURCES += \
 HEADERS += \
   albumtype.h \
   appsettings.h \
-  audioinfo.h \
+  trackinfo.h \
   downloaditemdata.h \
   runnables/checkqrcoderunnable.h \
   runnables/downloadfilerunnable.h \
   appevent.h \
   runnables/downloadvipfilerunnable.h \
   runnables/getalbuminforunnable.h \
-  runnables/getaudioinforunnable.h \
+  runnables/gettrackinforunnable.h \
   runnables/getqrcoderunnable.h \
   runnables/getuserinforunnable.h \
   runnables/getchargetrackinforunnable.h \

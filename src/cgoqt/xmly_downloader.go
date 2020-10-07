@@ -61,7 +61,7 @@ func CgoGetTrackList(albumID, pageID, isAsc C.int) *C.DataError {
 		v.Title = fileNameRegexp.ReplaceAllLiteralString(v.Title, " ")
 		v.Title = strings.ReplaceAll(v.Title, "\t", "")
 		v.Title = strings.TrimSpace(v.Title)
-		C.setPointerArray(ptrArray, C.int(i), C.newAudioItem(C.int(v.TrackID), C.CString(v.Title),
+		C.setPointerArray(ptrArray, C.int(i), C.newTrackInfo(C.int(v.TrackID), C.CString(v.Title), C.int(v.Duration),
 			C.CString(v.PlayURL32), C.CString(v.PlayURL64), C.CString(v.PlayPathAacv224), C.CString(v.PlayPathAacv164)))
 	}
 
@@ -80,7 +80,7 @@ func CgoGetVipAudioInfo(trackID C.int, cookie *C.char) *C.DataError {
 	ai.Title = fileNameRegexp.ReplaceAllLiteralString(ai.Title, " ")
 	ai.Title = strings.ReplaceAll(ai.Title, "\t", "")
 	ai.Title = strings.TrimSpace(ai.Title)
-	return C.newData(C.newAudioItem(C.int(ai.TrackID), C.CString(ai.Title), nil, nil, nil,
+	return C.newData(C.newTrackInfo(C.int(ai.TrackID), C.CString(ai.Title), C.int(ai.Duration), nil, nil, nil,
 		C.CString(ai.PlayPathAacv164)))
 }
 

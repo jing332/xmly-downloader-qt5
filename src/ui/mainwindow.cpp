@@ -12,7 +12,7 @@
 #include "cookieinputdialog.h"
 #include "getdownloadurldialog.h"
 #include "runnables/getalbuminforunnable.h"
-#include "runnables/getaudioinforunnable.h"
+#include "runnables/gettrackinforunnable.h"
 #include "ui_mainwindow.h"
 #include "utils.h"
 
@@ -22,9 +22,9 @@ MainWindow::MainWindow(QWidget *parent)
       appSettings_(new AppSettings(this)) {
   ui_->setupUi(this);
 
-  qRegisterMetaType<QList<AudioInfo *>>("QList<AudioInfo*>");
+  qRegisterMetaType<QList<TrackInfo *>>("QList<TrackInfo*>");
   qRegisterMetaType<QVector<int>>("QVector<int>");
-  qRegisterMetaType<AudioInfo>("AudioInfo");
+  qRegisterMetaType<TrackInfo>("TrackInfo");
 
   timer_ = new QTimer(this);
   pool_ = new QThreadPool(this);
@@ -67,22 +67,19 @@ MainWindow::MainWindow(QWidget *parent)
   ui_->statusbar->setStyleSheet("color: DodgerBlue");
 
   ui_->idLineEdit->setValidator(new QIntValidator(1, 100000000, this));
-  ui_->tableWidget->setColumnCount(3);
+  ui_->tableWidget->setColumnCount(4);
   ui_->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
   ui_->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
   ui_->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
   ui_->tableWidget->verticalHeader()->setDisabled(true);
 
-  QStringList header = {QStringLiteral("音频名称"), QStringLiteral("音频ID"),
-                        QStringLiteral("音频地址")};
+  QStringList header = {"标题", "时长", "ID", "播放地址"};
   ui_->tableWidget->setHorizontalHeaderLabels(header);
   ui_->tableWidget->horizontalHeader()->setStretchLastSection(true);
-  ui_->tableWidget->horizontalHeader()->setSectionResizeMode(
-      0, QHeaderView::ResizeToContents);
-  ui_->tableWidget->horizontalHeader()->setSectionResizeMode(
-      1, QHeaderView::ResizeToContents);
-  ui_->tableWidget->horizontalHeader()->setSectionResizeMode(
-      2, QHeaderView::ResizeToContents);
+  for (int i = 0; i < 4; i++) {
+    ui_->tableWidget->horizontalHeader()->setSectionResizeMode(
+        i, QHeaderView::ResizeToContents);
+  }
 }
 
 MainWindow::~MainWindow() {
@@ -255,23 +252,23 @@ void MainWindow::OnGetAlbumInfoFinished(int albumID, AlbumInfo *ai) {
   ui_->titleLabel->setText(text);
   albumName_ = QString(ai->title).replace(fileNameReg_, " ");
 
-  auto runnable = new GetAudioInfoRunnable(albumID, 1, isAsc_);
-  connect(runnable, &GetAudioInfoRunnable::Succeed, this,
-          [&](int albumID, int maxPageID, const QList<AudioInfo *> &list) {
+  auto runnable = new GetTrackInfoRunnable(albumID, 1, isAsc_);
+  connect(runnable, &GetTrackInfoRunnable::Succeed, this,
+          [&](int albumID, int maxPageID, const QList<TrackInfo *> &list) {
             AddAudioInfoItem(list);
             for (int i = 2; i <= maxPageID; i++) {
-              auto run = new GetAudioInfoRunnable(albumID, i, isAsc_);
-              connect(run, &GetAudioInfoRunnable::Succeed, this,
+              auto run = new GetTrackInfoRunnable(albumID, i, isAsc_);
+              connect(run, &GetTrackInfoRunnable::Succeed, this,
                       [&](int albumID, int maxPageID,
-                          const QList<AudioInfo *> &list) {
+                          const QList<TrackInfo *> &list) {
                         AddAudioInfoItem(list);
                       });
-              connect(run, &GetAudioInfoRunnable::Failed, this,
+              connect(run, &GetTrackInfoRunnable::Failed, this,
                       &MainWindow::OnGetAudioInfoFailed);
               pool_->start(run);
             }
           });
-  connect(runnable, &GetAudioInfoRunnable::Failed, this,
+  connect(runnable, &GetTrackInfoRunnable::Failed, this,
           &MainWindow::OnGetAudioInfoFailed);
   pool_->start(runnable);
 
@@ -285,7 +282,7 @@ void MainWindow::OnGetAlbumInfoFailed(const QString &err) {
   ui_->parseBtn->setEnabled(true);
 }
 
-void MainWindow::AddAudioInfoItem(const QList<AudioInfo *> &list) {
+void MainWindow::AddAudioInfoItem(const QList<TrackInfo *> &list) {
   timer_->start(1000);
   for (auto &ai : list) {
     ui_->statusbar->showMessage(ai->title(), 2000);
@@ -295,17 +292,25 @@ void MainWindow::AddAudioInfoItem(const QList<AudioInfo *> &list) {
 
     ui_->tableWidget->setItem(rowCount, 0, new QTableWidgetItem(ai->title()));
     ui_->tableWidget->setItem(
-        rowCount, 1, new QTableWidgetItem(QString::number(ai->trackID())));
+        rowCount, 2, new QTableWidgetItem(QString::number(ai->trackID())));
+
+    int minute = ai->duration() / 60;
+    int msec = ai->duration() % 60;
+    ui_->tableWidget->setItem(
+        rowCount, 1,
+        new QTableWidgetItem(QStringLiteral("%1:%2")
+                                 .arg(minute, 2, 10, QLatin1Char('0'))
+                                 .arg(msec, 2, 10, QLatin1Char('0'))));
 
     if (albumType != 1) {
       ai->ClearAllURL(); /*因试听音频的静态URL是无效的，所以需要删掉以调用付费音频接口*/
     }
 
     if ("mp3" == extName) {
-      ui_->tableWidget->setItem(rowCount, 2,
+      ui_->tableWidget->setItem(rowCount, 3,
                                 new QTableWidgetItem(ai->mp3URL64()));
     } else {
-      ui_->tableWidget->setItem(rowCount, 2,
+      ui_->tableWidget->setItem(rowCount, 3,
                                 new QTableWidgetItem(ai->m4aURL64()));
     }
     audioList_.append(ai);
