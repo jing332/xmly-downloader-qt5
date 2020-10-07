@@ -2,15 +2,14 @@ package main
 
 import "C"
 import (
-	"fmt"
+	"github.com/cavaliercoder/grab"
 	xmly "github.com/jing332/xmlydownloader"
-	"io"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 	"unsafe"
 )
 
@@ -85,75 +84,53 @@ func CgoGetVipAudioInfo(trackID C.int, cookie *C.char) *C.DataError {
 		C.CString(ai.PlayPathAacv164)))
 }
 
-//DownloadProgress 追踪下载进度
-type DownloadProgress struct {
-	io.Reader
-	ContentLength, CurrentLength int64
-	ProgressEvent                func()
-}
-
-func (d *DownloadProgress) Write(p []byte) (n int, err error) {
-	n = len(p)
-	d.CurrentLength += int64(n)
-	d.ProgressEvent()
-	return
+var grabClient = grab.Client{
+	UserAgent: xmly.UserAgentPC,
+	HTTPClient: &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+		},
+	},
 }
 
 //export CgoDownloadFile
 func CgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
-	var url string = C.GoString(cUrl)
-	var filePath string = C.GoString(cFilePath)
+	url := C.GoString(cUrl)
+	filePath := C.GoString(cFilePath)
 
-	resp, err := http.Head(url)
+	req, err := grab.NewRequest(filePath, url)
 	if err != nil {
 		return C.CString(err.Error())
 	}
-	defer resp.Body.Close()
-
-	contentLength := C.long(resp.ContentLength)
+	resp := grabClient.Do(req)
+	contentLength := C.long(resp.Size)
 	currentLength := C.long(0)
 	C.UpdateFileLength(uflCallback, id, &contentLength, &currentLength)
 	//判断同名文件是否存在并对比大小
 	if fileInfo, err := os.Stat(filePath); err == nil {
-		if fileInfo.Size() == resp.ContentLength {
+		if fileInfo.Size() == resp.Size {
+			err = resp.Cancel()
+			if err != nil {
+				return C.CString(err.Error())
+			}
 			return nil
 		}
 	}
 
-	resp, err = xmly.HttpGet(url, xmly.PC)
-	if err != nil {
-		return C.CString(fmt.Sprintf("download %s fail: %s", url, err.Error()))
+	t := time.NewTicker(100 * time.Millisecond)
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C:
+			currentLength := C.long(resp.BytesComplete())
+			C.UpdateFileLength(uflCallback, id, &contentLength, &currentLength)
+		case <-resp.Done:
+			if err := resp.Err(); err != nil {
+				return C.CString("无法下载文件: " + err.Error())
+			}
+			return nil
+		}
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return C.CString("download" + url + "fail: StatusCode != 200")
-	}
-
-	//目录不存在则创建
-	err = os.MkdirAll(filepath.Dir(filePath), 0777)
-	if err != nil && !os.IsExist(err) {
-		return C.CString(fmt.Sprintf("make dir fail: %s", err.Error()))
-	}
-
-	//创建并写入文件
-	file, err := os.Create(filePath)
-	if err != nil {
-		return C.CString(fmt.Sprintf("create file %s fail: %s", filePath, err.Error()))
-	}
-	defer file.Close()
-
-	downloadProgress := &DownloadProgress{ContentLength: resp.ContentLength}
-	downloadProgress.ProgressEvent = func() {
-		contentLength = C.long(downloadProgress.ContentLength)
-		currentLength = C.long(downloadProgress.CurrentLength)
-		C.UpdateFileLength(uflCallback, id, &contentLength, &currentLength)
-	}
-	_, err = io.Copy(io.MultiWriter(file, downloadProgress), resp.Body)
-	if err != nil {
-		return C.CString(fmt.Sprintf("io copy %s fail: %s", filePath, err.Error()))
-	}
-
-	return nil
 }
 
 //export CgoGetUserInfo
