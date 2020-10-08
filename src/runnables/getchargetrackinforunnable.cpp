@@ -6,7 +6,7 @@ GetChargeTrackInfoRunnable::GetChargeTrackInfoRunnable(int trackID,
 
 void GetChargeTrackInfoRunnable::run() {
   emit Start(trackID_);
-  auto dataErr = CgoGetVipAudioInfo(
+  auto dataErr = CgoGetChargeTrackInfo(
       trackID_, const_cast<char *>(cookie_.toStdString().c_str()));
 
   if (dataErr->error) {

@@ -29,7 +29,7 @@ void DownloadChargeTrackRunnable::run() {
 }
 
 TrackInfo *DownloadChargeTrackRunnable::GetChargeTrackInfo(int trackID) {
-  auto dataErr = CgoGetVipAudioInfo(
+  auto dataErr = CgoGetChargeTrackInfo(
       trackID_, const_cast<char *>(cookie_.toStdString().c_str()));
 
   if (dataErr->error) {

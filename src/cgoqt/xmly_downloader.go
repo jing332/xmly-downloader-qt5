@@ -16,8 +16,6 @@ import (
 //#include "cgo.h"
 import "C"
 
-var fileNameRegexp = regexp.MustCompile("[/\\:*?\"<>|]")
-
 func main() {
 	log.SetFlags(log.Lshortfile | log.Ltime)
 }
@@ -58,9 +56,7 @@ func CgoGetTrackList(albumID, pageID, isAsc C.int) *C.DataError {
 
 	ptrArray := C.newPointerArray(C.int(len(tracks.Data.List)))
 	for i, v := range tracks.Data.List {
-		v.Title = fileNameRegexp.ReplaceAllLiteralString(v.Title, " ")
-		v.Title = strings.ReplaceAll(v.Title, "\t", "")
-		v.Title = strings.TrimSpace(v.Title)
+		v.Title = formatFileName(v.Title)
 		C.setPointerArray(ptrArray, C.int(i), C.newTrackInfo(C.int(v.TrackID), C.CString(v.Title), C.int(v.Duration),
 			C.CString(v.PlayURL32), C.CString(v.PlayURL64), C.CString(v.PlayPathAacv224), C.CString(v.PlayPathAacv164)))
 	}
@@ -70,16 +66,13 @@ func CgoGetTrackList(albumID, pageID, isAsc C.int) *C.DataError {
 	return C.newData(unsafe.Pointer(cPlaylist))
 }
 
-//export CgoGetVipAudioInfo
-func CgoGetVipAudioInfo(trackID C.int, cookie *C.char) *C.DataError {
+//export CgoGetChargeTrackInfo
+func CgoGetChargeTrackInfo(trackID C.int, cookie *C.char) *C.DataError {
 	ai, err := xmly.GetVipAudioInfo(int(trackID), C.GoString(cookie))
 	if err != nil {
 		return C.newDataError(nil, C.CString(err.Error()))
 	}
-	//将特殊字符替换为空格
-	ai.Title = fileNameRegexp.ReplaceAllLiteralString(ai.Title, " ")
-	ai.Title = strings.ReplaceAll(ai.Title, "\t", "")
-	ai.Title = strings.TrimSpace(ai.Title)
+	ai.Title = formatFileName(ai.Title)
 	return C.newData(C.newTrackInfo(C.int(ai.TrackID), C.CString(ai.Title), C.int(ai.Duration), nil, nil, nil,
 		C.CString(ai.PlayPathAacv164)))
 }
@@ -119,9 +112,25 @@ func CgoDownloadFile(cUrl, cFilePath *C.char, id C.int) *C.char {
 
 	t := time.NewTicker(100 * time.Millisecond)
 	defer t.Stop()
+	var lastProgress float64
+	count := 0
 	for {
 		select {
 		case <-t.C:
+			//超时(2s)
+			if count == 20 {
+				err = resp.Cancel()
+				if err != nil {
+					return C.CString("无法下载文件: 已超时: " + err.Error())
+				}
+				return C.CString("无法下载文件: 已超时")
+			}
+			if lastProgress == resp.Progress() {
+				count++
+			} else {
+				lastProgress = resp.Progress()
+			}
+
 			currentLength := C.long(resp.BytesComplete())
 			C.UpdateFileLength(uflCallback, id, &contentLength, &currentLength)
 		case <-resp.Done:
@@ -172,22 +181,11 @@ func CgoCheckQRCode(qrID *C.char) *C.char {
 	return nil
 }
 
-////export CgoGetAllAudioInfo
-//func CgoGetAllAudioInfo(albumID C.int) *C.DataError {
-//	list, err := xmly.GetAllAudioInfo(int(albumID))
-//	if err != nil {
-//		return C.newDataError(nil, C.CString(err.Error()))
-//	}
-//
-//	ptrArray := C.newPointerArray(C.int(len(list)))
-//	for i, v := range list {
-//		//将特殊字符替换为空格
-//		v.Title = fileNameRegexp.ReplaceAllLiteralString(v.Title, " ")
-//		C.setPointerArray(ptrArray, C.int(i), C.newAudioItem(C.int(v.TrackID), C.CString(v.Title),
-//			C.CString(v.PlayURL32), C.CString(v.PlayURL64), C.CString(v.PlayPathAacv224), C.CString(v.PlayPathAacv164)))
-//	}
-//	cArray := C.newCArray(ptrArray, C.int(len(list)))
-//
-//	p := C.newData(unsafe.Pointer(cArray))
-//	return p
-//}
+var fileNameRegexp = regexp.MustCompile("[/\\:*?\"<>|]")
+
+func formatFileName(s string) string {
+	s = fileNameRegexp.ReplaceAllLiteralString(s, " ")
+	s = strings.ReplaceAll(s, "\t", "")
+	s = strings.TrimSpace(s)
+	return s
+}
