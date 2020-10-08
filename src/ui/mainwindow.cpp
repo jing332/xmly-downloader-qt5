@@ -302,7 +302,7 @@ void MainWindow::AddAudioInfoItem(const QList<TrackInfo *> &list) {
                                  .arg(minute, 2, 10, QLatin1Char('0'))
                                  .arg(msec, 2, 10, QLatin1Char('0'))));
 
-    if (albumType != 1) {
+    if (AlbumType::FREE != albumType) {
       ai->ClearAllURL(); /*因试听音频的静态URL是无效的，所以需要删掉以调用付费音频接口*/
     }
 
