@@ -37,7 +37,7 @@ func CgoGetAlbumInfo(albumID C.int) *C.DataError {
 	}
 
 	var freeTrackIDs *C.char = nil
-	if len(ai.Data.Album.PriceTypes) >= 0 {
+	if len(ai.Data.Album.PriceTypes) > 0 {
 		freeTrackIDs = C.CString(ai.Data.Album.PriceTypes[0].FreeTrackIds)
 	}
 	pAlbumInfo := C.newAlbumInfo(C.CString(ai.Data.Album.Title), C.int(ai.Data.Album.TrackCount),
