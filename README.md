@@ -1,4 +1,4 @@
-# 精力有限，本项目将停止维护！
+# 请不要登陆账号并下载VIP/付费专辑，否则将会被永久封禁！
 
 <p align="center">
 <img src="http://blog.xmcdn.com/wp-content/uploads/2014/04/%E8%A7%84%E8%8C%831.png">
@@ -18,7 +18,7 @@
 
 喜马拉雅FM专辑下载器. 使用Go+Qt5编写(非Qt Binding).
 
-**所下载音频版权归[喜马拉雅FM](https://www.ximalaya.com)所有，严禁商业用途！**
+**所下载音视频版权归[喜马拉雅FM](https://www.ximalaya.com)所有，严禁商业用途！**
 
 ## 喜马拉雅已开始封禁账号，请酌情使用本工具！否则后果自负！
 
@@ -47,9 +47,9 @@
 
 > 自动同步[Actions](https://github.com/jing332/xmly-downloader-qt5/actions)最新构建产物到坚果云，方便国内用户下载。
 
-密码: `jing`
+不再提供下载，请自行构建。(非Windows系统推荐使用静态编译)
 
-[win32](https://www.jianguoyun.com/p/DevyI60Q5dvlCBieh7sD) | [linux](https://www.jianguoyun.com/p/DaX_DxwQ5dvlCBjxjbsD) | [macOS](https://www.jianguoyun.com/p/DYp_qTkQ5dvlCBiOjrsD)
+~~[win32](https://www.jianguoyun.com/p/DevyI60Q5dvlCBieh7sD) | [linux](https://www.jianguoyun.com/p/DaX_DxwQ5dvlCBjxjbsD) | [macOS](https://www.jianguoyun.com/p/DYp_qTkQ5dvlCBiOjrsD)~~
 
 # Build
 
